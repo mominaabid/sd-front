@@ -33,10 +33,16 @@ export function Preloader({ onComplete }: { onComplete: () => void }) {
 
       {/* Brand Name */}
       <div className="preloader-text text-center" style={{ animationDelay: '0.2s' }}>
-        <h1 className="font-serif text-3xl md:text-4xl text-[#F3F3F2] tracking-wide mb-2">
-          {preloaderConfig.brandName}
-        </h1>
-        <p className="font-script text-2xl text-[#CDFF00]">{preloaderConfig.brandSubname}</p>
+        <h1 className="font-serif text-3xl md:text-4xl tracking-wide mb-2">
+  <span className="text-[#F3F3F2]">
+    {preloaderConfig.brandName}
+  </span>{" "}
+  {preloaderConfig.brandHighlight && (
+    <span className="text-[#CDFF00]">
+      {preloaderConfig.brandHighlight}
+    </span>
+  )}
+</h1>
       </div>
 
       {/* Loading Line */}

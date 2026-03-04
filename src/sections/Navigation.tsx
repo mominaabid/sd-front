@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { navigationConfig } from '../config';
-import {  Home, Film, CreditCard, Users } from 'lucide-react';
+import { Home, Film, CreditCard, Users } from 'lucide-react';
 
 const iconMap: Record<string, React.ElementType> = {
   Home,
@@ -10,52 +10,29 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 export function Navigation() {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 100);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   // Close mobile menu on resize
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 768) {
-        setIsMobileMenuOpen(false);
-      }
+      if (window.innerWidth >= 768) setIsMobileMenuOpen(false);
     };
-
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
+    document.body.style.overflow = isMobileMenuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
   }, [isMobileMenuOpen]);
 
   return (
     <>
-    
-
       {/* Mobile Menu */}
       <div
         className={`fixed inset-0 z-40 md:hidden transition-all duration-500 ${
-          isMobileMenuOpen
-            ? 'opacity-100 pointer-events-auto'
-            : 'opacity-0 pointer-events-none'
+          isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >
         {/* Backdrop */}
@@ -67,14 +44,14 @@ export function Navigation() {
         {/* Menu Content */}
         <div
           className={`absolute top-20 left-4 right-4 bg-[#363432] rounded-2xl p-6 shadow-2xl transition-all duration-500 ${
-            isMobileMenuOpen
-              ? 'translate-y-0 opacity-100'
-              : '-translate-y-8 opacity-0'
+            isMobileMenuOpen ? 'translate-y-0 opacity-100' : '-translate-y-8 opacity-0'
           }`}
         >
           <div className="space-y-4">
             {navigationConfig.navLinks.map((link) => {
-              const Icon = iconMap[link.icon];
+              // Safe typing: only access iconMap if link.icon exists
+              const Icon = link.icon ? iconMap[link.icon] : undefined;
+
               return (
                 <a
                   key={link.name}

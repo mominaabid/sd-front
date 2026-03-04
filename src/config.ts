@@ -66,12 +66,12 @@ export const navigationConfig: NavigationConfig = {
 // -----------------------------------------------------------------------------
 // Preloader Config
 // -----------------------------------------------------------------------------
-export interface PreloaderConfig {
+export type PreloaderConfig = {
   brandName: string;
-  brandHighlight: string;
-  tagline: string;
-  yearText: string;
-}
+  brandHighlight?: string;
+  tagline?: string; // add this
+  yearText?: string;
+};
 
 export const preloaderConfig: PreloaderConfig = {
   brandName: "S&D",
