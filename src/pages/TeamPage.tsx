@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Menu, X, Linkedin } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import {useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../constants/urls'; // Ensure this file exists
 
 // ─── Types matching your backend model (TeamMember) ─────────────
