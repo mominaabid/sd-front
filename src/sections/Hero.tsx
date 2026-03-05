@@ -1,7 +1,7 @@
+
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Menu, X, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { API_BASE_URL } from '../constants/urls'; // Make sure this file exists
+import { API_BASE_URL } from '../constants/urls';
 
 interface HeroApiResponse {
   success: boolean;
@@ -21,9 +21,8 @@ export function Hero({ isReady = true }: HeroProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const [visible, setVisible] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // ─── Dynamic data states ───────────────────────────────────────
+
   const [heroData, setHeroData] = useState<HeroApiResponse['data'] | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -37,21 +36,22 @@ export function Hero({ isReady = true }: HeroProps) {
   const fetchHero = useCallback(async () => {
     try {
       setLoading(true);
+
       const response = await fetch(`${API_BASE_URL}hero/`);
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status} – ${response.statusText}`);
+        throw new Error(`HTTP ${response.status}`);
       }
 
       const json: HeroApiResponse = await response.json();
 
       if (!json.success || !json.data) {
-        throw new Error('API response format invalid');
+        throw new Error("Invalid API response");
       }
 
       setHeroData(json.data);
     } catch (err) {
-      console.error('Hero fetch failed:', err);
+      console.error("Hero fetch failed:", err);
       setHeroData(fallbackData);
     } finally {
       setLoading(false);
@@ -63,140 +63,229 @@ export function Hero({ isReady = true }: HeroProps) {
   }, [isReady, fetchHero]);
 
   useEffect(() => {
-    if (!isReady) return;
     const t = setTimeout(() => setVisible(true), 100);
     return () => clearTimeout(t);
-  }, [isReady]);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
     handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  const ctaStyle = {
-    background: '#CDFF00',
-    color: '#222120',
-    fontWeight: 500,
-    fontSize: '0.95rem',
-    padding: '11px 26px',
-    borderRadius: '8px',
-    textDecoration: 'none',
-    transition: 'all 0.25s ease',
-    boxShadow: scrolled ? '0 4px 16px rgba(205,255,0,0.25)' : 'none',
-  } as const;
-
-  const mobileLinkStyle = {
-    fontSize: '1.6rem',
-    color: '#F3F3F2',
-    textDecoration: 'none',
-  } as const;
 
   const videoSrc =
     heroData?.background_video_file ||
     heroData?.background_video_url ||
-    'https://assets.mixkit.co/videos/preview/mixkit-wedding-couple-in-a-romantic-sunset-scene-34374-large.mp4';
+    "https://assets.mixkit.co/videos/preview/mixkit-wedding-couple-in-a-romantic-sunset-scene-34374-large.mp4";
 
   const posterSrc =
     heroData?.background_video_file || heroData?.background_video_url
       ? undefined
-      : 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1920&q=80';
+      : "https://images.unsplash.com/photo-1519741497674-611481863552?w=1920&q=80";
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&display=swap');
-        :root { --lime: #CDFF00; --dark: #222120; --light: #F3F3F2; --muted: #DADADA; }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--dark); color: var(--light); overflow-x: hidden; }
-        /* NAV, HERO, etc styles omitted for brevity – keep the same from your original code */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap');
+
+        :root {
+          --lime:#CDFF00;
+          --dark:#222120;
+          --light:#F3F3F2;
+        }
+
+        body{
+          font-family:'DM Sans',sans-serif;
+          background:var(--dark);
+          color:var(--light);
+          overflow-x:hidden;
+        }
+
+        .hero{
+          position:relative;
+          min-height:100vh;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+        }
+
+        .hero-video-wrap{
+          position:absolute;
+          inset:0;
+          overflow:hidden;
+          z-index:0;
+        }
+
+        .hero-video-wrap video{
+          width:100%;
+          height:100%;
+          object-fit:cover;
+        }
+
+        .hero-overlay{
+          position:absolute;
+          inset:0;
+          background:rgba(0,0,0,0.55);
+          z-index:1;
+        }
+
+        .hero-center{
+          position:relative;
+          z-index:2;
+          text-align:center;
+          max-width:900px;
+          padding:0 20px;
+        }
+
+        .hero-script{
+          color:var(--lime);
+          letter-spacing:4px;
+          font-size:0.8rem;
+          font-weight:500;
+        }
+
+        .hero-title{
+          font-family:'Playfair Display',serif;
+          font-size:clamp(2.5rem,6vw,4.5rem);
+          margin:16px 0;
+          line-height:1.1;
+          white-space:pre-line;
+        }
+
+        .hero-subtitle{
+          font-size:1.6rem;
+          font-weight:500;
+          margin-bottom:16px;
+        }
+
+        .hero-desc{
+          color:#ccc;
+          margin-bottom:30px;
+        }
+
+        .hero-buttons{
+          display:flex;
+          gap:18px;
+          justify-content:center;
+        }
+
+        .btn-primary{
+          background:var(--lime);
+          color:#222;
+          padding:14px 28px;
+          border-radius:8px;
+          text-decoration:none;
+          font-weight:600;
+          font-size:1rem;
+        }
+
+        .btn-secondary{
+          border:1px solid #aaa;
+          padding:12px 28px;
+          border-radius:8px;
+          text-decoration:none;
+          color:#eee;
+        }
       `}</style>
 
       {/* NAVBAR */}
       <nav
         style={{
-          position: 'fixed',
+          position: "fixed",
           top: 0,
           left: 0,
           right: 0,
-          zIndex: 1000,
-          height: '64px',
-          display: 'flex',
-          alignItems: 'center',
-          transition: 'background 0.4s ease, backdrop-filter 0.4s ease, box-shadow 0.4s ease',
-          background: scrolled ? 'rgba(34, 33, 32, 0.82)' : 'transparent',
-          backdropFilter: scrolled ? 'blur(16px)' : 'none',
-          WebkitBackdropFilter: scrolled ? 'blur(16px)' : 'none',
-          boxShadow: scrolled ? '0 4px 20px rgba(0,0,0,0.25)' : 'none',
-          borderBottom: scrolled ? '1px solid rgba(255,255,255,0.06)' : 'none',
+          height: "70px",
+          display: "flex",
+          alignItems: "center",
+          zIndex: 10,
+          background: scrolled ? "rgba(34,33,32,0.85)" : "transparent",
+          backdropFilter: scrolled ? "blur(14px)" : "none",
         }}
       >
-        <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <a href="#home" style={{ fontSize: '1.5rem', fontFamily: "'Playfair Display', serif", fontWeight: 700, letterSpacing: '-0.02em', color: '#e9e9e9', textDecoration: 'none' }}>
-            S&amp;D <span style={{ color: '#CDFF00' }}>Media</span>
-          </a>
+        <div
+          style={{
+            maxWidth: "1200px",
+            margin: "0 auto",
+            width: "100%",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+ <a href="/" style={{ display: "flex", alignItems: "center" }}>
+  <img
+    src="/logoImage.png"
+    alt="S&D Media"
+    style={{
+      height: "80px",
+      width: "auto",
+      objectFit: "contain",
+      cursor: "pointer",
+      transition: "transform 0.3s ease, opacity 0.3s ease",
+    }}
+    onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+    onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
+  />
+</a>
 
-          {/* Desktop links */}
-          <div className="nav-desktop" style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-            {['Home', 'Portfolio', 'Pricing'].map(label => (
-              <a key={label} href={`#${label.toLowerCase()}`} style={{ fontSize: '0.875rem', fontWeight: 500, color: '#d3d3cc', textDecoration: 'none', transition: 'color 0.2s ease' }}
-                onMouseEnter={e => (e.currentTarget.style.color = '#F3F3F2')}
-                onMouseLeave={e => (e.currentTarget.style.color = '#d3d3cc')}
-              >
-                {label}
-              </a>
-            ))}
-            <Link to="/team" style={{ fontSize: '0.875rem', fontWeight: 500, color: '#d3d3cc', textDecoration: 'none' }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#F3F3F2')}
-              onMouseLeave={e => (e.currentTarget.style.color = '#d3d3cc')}
-            >
-              Our Team
-            </Link>
-            <a href="#pricing" style={{ padding: '8px 20px', fontSize: '0.875rem', fontWeight: 500, background: '#CDFF00', color: '#222120', borderRadius: '6px', textDecoration: 'none' }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
-              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+          <div style={{ display: "flex", gap: "2rem", alignItems: "center" }}>
+            <a href="#home">Home</a>
+            <a href="#portfolio">Portfolio</a>
+            <a href="#pricing">Pricing</a>
+            <Link to="/team">Our Team</Link>
+
+            <a
+              href="#pricing"
+              style={{
+                background: "#CDFF00",
+                padding: "8px 20px",
+                borderRadius: "6px",
+                textDecoration: "none",
+                color: "#222",
+              }}
             >
               Start a Project
             </a>
           </div>
-
-          <button className="hamburger" onClick={() => setMobileMenuOpen(true)} style={{ display: 'none', background: 'none', border: 'none', color: '#F3F3F2', cursor: 'pointer' }}>
-            <Menu size={24} />
-          </button>
         </div>
-
-        {mobileMenuOpen && (
-          <div style={{ position: 'fixed', inset: '80px 0 0 0', background: 'rgba(34,33,32,0.96)', backdropFilter: 'blur(12px)', zIndex: 999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2.8rem' }}>
-            <button onClick={() => setMobileMenuOpen(false)} style={{ position: 'absolute', top: '1.5rem', right: '5vw', background: 'none', border: 'none', color: '#F3F3F2', fontSize: '2.5rem' }}>
-              <X size={40} />
-            </button>
-
-            <a href="#home" style={mobileLinkStyle} onClick={() => setMobileMenuOpen(false)}>Home</a>
-            <a href="#portfolio" style={mobileLinkStyle} onClick={() => setMobileMenuOpen(false)}>Portfolio</a>
-            <a href="#pricing" style={mobileLinkStyle} onClick={() => setMobileMenuOpen(false)}>Pricing</a>
-            <a href="/team" style={mobileLinkStyle} onClick={() => setMobileMenuOpen(false)}>Our Team</a>
-            <a href="#pricing" style={{ ...ctaStyle, fontSize: '1.3rem', padding: '14px 36px' }} onClick={() => setMobileMenuOpen(false)}>Start a Project</a>
-          </div>
-        )}
       </nav>
 
       {/* HERO */}
-      <section ref={sectionRef} id="home" className="hero min-h-screen relative z-0">
+      <section ref={sectionRef} id="home" className="hero">
         <div className="hero-video-wrap">
           <video autoPlay muted loop playsInline poster={posterSrc}>
             <source src={videoSrc} type="video/mp4" />
           </video>
         </div>
 
-        <div className={`hero-content${visible ? ' visible' : ''}`}>
-          <span className="fade-up hero-script">WEDDING VIDEO EDITING</span>
-          <h1 className="fade-up hero-title">{loading ? 'Loading...' : (heroData?.heading || fallbackData.heading)}</h1>
-          <p className="fade-up hero-subtitle">{loading ? '...' : (heroData?.subtitle || fallbackData.subtitle)}</p>
-          <p className="fade-up hero-desc">Professional post-production for wedding videographers who refuse to compromise on quality or deadlines.</p>
-          <div className="fade-up hero-buttons">
-            <a href="#pricing" className="btn-primary">Pricing <ArrowRight size={16} /></a>
-            <a href="#portfolio" className="btn-secondary">Portfolio <ArrowRight size={16} /></a>
+        <div className="hero-overlay"></div>
+
+        <div className={`hero-center ${visible ? "visible" : ""}`}>
+          <span className="hero-script">WEDDING VIDEO EDITING</span>
+
+          <h1 className="hero-title">
+            {loading ? "Loading..." : heroData?.heading || fallbackData.heading}
+          </h1>
+
+          <p className="hero-subtitle">
+            {loading ? "..." : heroData?.subtitle || fallbackData.subtitle}
+          </p>
+
+          <p className="hero-desc">
+            Professional post-production for wedding videographers who refuse
+            to compromise on quality or deadlines.
+          </p>
+
+          <div className="hero-buttons">
+            <a href="#pricing" className="btn-primary">
+              Pricing
+            </a>
+
+            <a href="#portfolio" className="btn-secondary">
+              Portfolio 
+            </a>
           </div>
         </div>
       </section>
