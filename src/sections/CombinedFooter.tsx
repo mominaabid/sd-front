@@ -10,7 +10,6 @@ import {
   Facebook,
   Linkedin,
   Youtube,
-  ArrowUp,
 } from 'lucide-react';
 
 const iconMap = {
@@ -49,15 +48,10 @@ export function CombinedFooter() {
         company: '',
         message: '',
       });
-    } catch {
-      // optional error handling
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  const scrollToTop = () =>
-    window.scrollTo({ top: 0, behavior: 'smooth' });
 
   return (
     <section
@@ -250,14 +244,6 @@ export function CombinedFooter() {
           © 2026 S&D Media. All rights reserved.
         </div>
       </div>
-
-      {/* Back To Top */}
-      <button
-        onClick={scrollToTop}
-        className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-[#CDFF00] text-[#222120] flex items-center justify-center shadow-xl hover:bg-[#b8e600] transition-colors"
-      >
-        <ArrowUp size={22} />
-      </button>
     </section>
   );
 }

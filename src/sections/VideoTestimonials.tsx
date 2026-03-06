@@ -50,7 +50,7 @@ export function VideoTestimonials() {
     fetchTestimonials();
   }, []);
 
-  // ─── Improved fade-in observer + force visible ─────────────────
+  // ─── Fade-in observer ─────────────────────────────────────────
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -67,11 +67,10 @@ export function VideoTestimonials() {
       }
     );
 
-    // Query all .test-fade (document-wide fallback)
     const elements = document.querySelectorAll('.test-fade');
     elements.forEach((el) => observer.observe(el));
 
-    // Force visible check after mount (handles sections off-screen on load)
+    // Force visible for elements initially in view
     setTimeout(() => {
       document.querySelectorAll('.test-fade').forEach((el) => {
         const rect = el.getBoundingClientRect();
@@ -82,7 +81,7 @@ export function VideoTestimonials() {
     }, 800);
 
     return () => observer.disconnect();
-  }, [testimonials, loading]); // re-run when data changes
+  }, [testimonials, loading]);
 
   // ─── Auto-rotate carousel ──────────────────────────────────────
   useEffect(() => {
@@ -124,13 +123,17 @@ export function VideoTestimonials() {
     );
   };
 
-  const getPosition = (index: number) => {
-    const diff = (index - activeIndex + testimonials.length) % testimonials.length;
-    if (diff === 0) return 'center';
-    if (diff === 1 || diff === -(testimonials.length - 1)) return 'right';
-    if (diff === testimonials.length - 1 || diff === -1) return 'left';
-    return 'hidden';
-  };
+  // ─── Position calculation for 3-card loop ──────────────
+const getPosition = (index: number) => {
+  const total = testimonials.length;
+  const diff = (index - activeIndex + total) % total;
+
+  // Only 3 visible positions
+  if (diff === 0) return 'center';          // Active card
+  if (diff === 1 || (diff - total) === -2) return 'right';  // Right card
+  if (diff === total - 1 || diff === -1) return 'left';     // Left card
+  return 'hidden';                          // Hidden card
+};
 
   // ─── Render ─────────────────────────────────────────────────────
   if (loading) {
@@ -188,6 +191,7 @@ export function VideoTestimonials() {
           opacity: 0.8;
         }
 
+        /* FIX: always centered around middle card */
         .reel-left { left: calc(50% - 220px); }
         .reel-right { left: calc(50% + 220px); }
 
@@ -202,55 +206,13 @@ export function VideoTestimonials() {
           .reel-left { left: calc(50% - 170px); width: 140px; height: 250px; }
           .reel-right { left: calc(50% + 170px); width: 140px; height: 250px; }
         }
-
-        .popup-nav {
-          position: absolute;
-          top: 50%;
-          transform: translateY(-50%);
-          z-index: 60;
-          width: 50px;
-          height: 50px;
-          background: rgba(34, 33, 32, 0.75);
-          backdrop-filter: blur(10px);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          cursor: pointer;
-          transition: all 0.3s ease;
-        }
-
-        .popup-nav:hover {
-          background: #CDFF00;
-          color: #222120;
-          transform: translateY(-50%) scale(1.15);
-        }
-
-        .popup-nav-left  { left: 20px; }
-        .popup-nav-right { right: 20px; }
-
-        @media (min-width: 640px) {
-          .popup-nav { width: 60px; height: 60px; }
-          .popup-nav-left  { left: 40px; }
-          .popup-nav-right { right: 40px; }
-        }
       `}</style>
 
       <section
-        ref={sectionRef}
-        className="py-24 relative overflow-hidden bg-gradient-to-br from-[#1a1918] via-[#2a2826] to-[#363432] min-h-[80vh] relative z-10"
-      >
-        {/* Lime glow */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: 'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(205,255,0,0.06) 0%, transparent 70%)',
-          }}
-        />
-
+  ref={sectionRef}
+  className="py-24 relative overflow-hidden bg-gradient-to-br from-[#1a1918] via-[#2a2826] to-[#363432] min-h-[80vh] z-10"
+>
         <div className="container mx-auto px-6 relative z-10">
-          {/* Header */}
           <div className="test-fade text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-display font-bold mb-4 text-white">
               Video <span className="text-[#CDFF00]">Testimonials</span>
@@ -259,27 +221,15 @@ export function VideoTestimonials() {
 
           {/* Carousel */}
           <div className="test-fade relative" style={{ height: '440px' }}>
-            {/* Arrows */}
-            <button
-              onClick={handlePrev}
-              className="absolute left-4 md:left-10 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-[#CDFF00] hover:text-black transition-all shadow-lg"
-              aria-label="Previous"
-            >
+            <button onClick={handlePrev} className="absolute left-4 md:left-10 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-[#CDFF00] hover:text-black transition-all shadow-lg">
               <ChevronLeft className="w-7 h-7" />
             </button>
-
-            <button
-              onClick={handleNext}
-              className="absolute right-4 md:right-10 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-[#CDFF00] hover:text-black transition-all shadow-lg"
-              aria-label="Next"
-            >
+            <button onClick={handleNext} className="absolute right-4 md:right-10 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-[#CDFF00] hover:text-black transition-all shadow-lg">
               <ChevronRight className="w-7 h-7" />
             </button>
 
-            {/* Cards */}
             {testimonials.map((testimonial, index) => {
               const position = getPosition(index);
-
               return (
                 <div
                   key={testimonial.id}
@@ -302,11 +252,7 @@ export function VideoTestimonials() {
                         No thumbnail
                       </div>
                     )}
-
-                    {/* Gradient */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-
-                    {/* Play button (center only) */}
                     {position === 'center' && (
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="w-16 h-16 rounded-full bg-[#CDFF00]/90 flex items-center justify-center transform scale-90 group-hover:scale-110 transition-all duration-300 shadow-2xl shadow-[#CDFF00]/30">
@@ -314,16 +260,10 @@ export function VideoTestimonials() {
                         </div>
                       </div>
                     )}
-
-                    {/* Info */}
                     <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/90 to-transparent">
-                      <h4 className="font-display font-semibold text-white text-lg mb-1">
-                        {testimonial.name}
-                      </h4>
+                      <h4 className="font-display font-semibold text-white text-lg mb-1">{testimonial.name}</h4>
                       <p className="text-[#CDFF00] text-sm">{testimonial.designation}</p>
-                      {testimonial.company && (
-                        <p className="text-gray-300 text-sm mt-1">{testimonial.company}</p>
-                      )}
+                      {testimonial.company && <p className="text-gray-300 text-sm mt-1">{testimonial.company}</p>}
                     </div>
                   </div>
                 </div>
@@ -348,54 +288,27 @@ export function VideoTestimonials() {
         </div>
       </section>
 
-      {/* ─── POPUP ───────────────────────────────────────────────────── */}
+      {/* POPUP */}
       {selectedIndex !== null && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg"
-          onClick={() => setSelectedIndex(null)}
-        >
-          <div
-            className="relative w-full max-w-4xl aspect-video bg-[#1a1a1a] rounded-2xl overflow-hidden shadow-2xl border border-gray-800"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setSelectedIndex(null)}
-              className="absolute top-4 right-4 z-20 w-12 h-12 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-[#CDFF00] hover:text-black transition-all shadow-md"
-            >
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg" onClick={() => setSelectedIndex(null)}>
+          <div className="relative w-full max-w-4xl aspect-video bg-[#1a1a1a] rounded-2xl overflow-hidden shadow-2xl border border-gray-800" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => setSelectedIndex(null)} className="absolute top-4 right-4 z-20 w-12 h-12 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-[#CDFF00] hover:text-black transition-all shadow-md">
               <X className="w-6 h-6" />
             </button>
-
-            <button
-              onClick={goToPrevVideo}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-[#CDFF00] hover:text-black transition-all"
-              aria-label="Previous"
-            >
+            <button onClick={goToPrevVideo} className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-[#CDFF00] hover:text-black transition-all">
               <ChevronLeft className="w-7 h-7" />
             </button>
-
-            <button
-              onClick={goToNextVideo}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-[#CDFF00] hover:text-black transition-all"
-              aria-label="Next"
-            >
+            <button onClick={goToNextVideo} className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-[#CDFF00] hover:text-black transition-all">
               <ChevronRight className="w-7 h-7" />
             </button>
 
-            {/* Video or fallback */}
             {testimonials[selectedIndex].video_file || testimonials[selectedIndex].video_url ? (
               <video
                 src={testimonials[selectedIndex].video_file || testimonials[selectedIndex].video_url}
                 controls
                 autoPlay
                 className="w-full h-full object-cover"
-                onError={(e) => console.error('Video error:', e)}
-              >
-                <source
-                  src={testimonials[selectedIndex].video_file || testimonials[selectedIndex].video_url}
-                  type="video/mp4"
-                />
-                Your browser does not support video playback.
-              </video>
+              />
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 to-black text-center p-8">
                 {testimonials[selectedIndex].thumbnail && (
@@ -405,22 +318,15 @@ export function VideoTestimonials() {
                     className="max-w-full max-h-3/4 object-contain rounded-xl mb-6 shadow-2xl"
                   />
                 )}
-                <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
-                  {testimonials[selectedIndex].name}
-                </h3>
+                <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">{testimonials[selectedIndex].name}</h3>
                 <p className="text-[#CDFF00] text-lg mb-2">{testimonials[selectedIndex].designation}</p>
-                {testimonials[selectedIndex].company && (
-                  <p className="text-gray-300 text-base mb-6">{testimonials[selectedIndex].company}</p>
-                )}
+                {testimonials[selectedIndex].company && <p className="text-gray-300 text-base mb-6">{testimonials[selectedIndex].company}</p>}
                 <p className="text-gray-400 text-xl">Video coming soon – stay tuned!</p>
               </div>
             )}
 
-            {/* Bottom info bar */}
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent px-6 py-4">
-              <h3 className="font-display text-xl font-bold text-white">
-                {testimonials[selectedIndex].name}
-              </h3>
+              <h3 className="font-display text-xl font-bold text-white">{testimonials[selectedIndex].name}</h3>
               <p className="text-[#CDFF00] text-sm">{testimonials[selectedIndex].designation}</p>
             </div>
           </div>

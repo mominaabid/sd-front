@@ -15,11 +15,20 @@ interface Video {
   id: number;
   title: string;
   couple?: string;
-  thumbnail_url: string;
+  thumbnail_url?: string;
   video_url?: string;
   video_file?: string;
   category: { id: number };
 }
+
+// ─────────────────────────────────────────────────────────────
+// Helper to normalize URLs
+// ─────────────────────────────────────────────────────────────
+const getMediaUrl = (url?: string) => {
+  if (!url) return null;
+  if (url.startsWith('http')) return url;
+  return `${API_BASE_URL.replace('/api/v1/', '')}${url}`;
+};
 
 // ─────────────────────────────────────────────────────────────
 export function Portfolio() {
@@ -43,16 +52,12 @@ export function Portfolio() {
         const json = await res.json();
         const fetched = json.data || json;
 
-        setCategories([
-          { id: 0, name: 'All', slug: 'all' },
-          ...fetched,
-        ]);
+        setCategories([{ id: 0, name: 'All', slug: 'all' }, ...fetched]);
       } catch (err) {
         console.error('Categories fetch error:', err);
         setError('Failed to load portfolio categories');
       }
     };
-
     fetchCategories();
   }, []);
 
@@ -63,19 +68,15 @@ export function Portfolio() {
     const fetchVideos = async () => {
       setLoading(true);
       setError(null);
-
       try {
         let url = `${API_BASE_URL}portfolio/videos/`;
         if (activeTab !== 'All') {
           const selectedCat = categories.find(c => c.name === activeTab);
-          if (selectedCat && selectedCat.id !== 0) {
-            url += `?category=${selectedCat.id}`;
-          }
+          if (selectedCat && selectedCat.id !== 0) url += `?category=${selectedCat.id}`;
         }
 
         const res = await fetch(url);
         if (!res.ok) throw new Error(`Videos fetch failed: ${res.status}`);
-
         const json = await res.json();
         const fetchedVideos = json.data || json;
 
@@ -92,41 +93,37 @@ export function Portfolio() {
     fetchVideos();
   }, [activeTab, categories]);
 
-  // ─── Improved Intersection Observer + force visible fallback ───
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      {
-        threshold: 0.1,
-        rootMargin: '0px 0px -100px 0px', // trigger earlier
-      }
-    );
+  // ─── Pagination ────────────────────────────────────────────────
+const totalPages = Math.ceil(videos.length / itemsPerPage);
+const paginatedVideos = videos.slice(
+  currentPage * itemsPerPage,
+  (currentPage + 1) * itemsPerPage
+);
 
-    // Query all .port-fade in document (safer than ref-only)
-    const elements = document.querySelectorAll('.port-fade');
-    elements.forEach((el) => observer.observe(el));
-
-    // Force visible for elements already in view after mount
-    setTimeout(() => {
-      document.querySelectorAll('.port-fade').forEach((el) => {
-        const rect = el.getBoundingClientRect();
-        if (rect.top < window.innerHeight && rect.bottom > 0) {
-          el.classList.add('visible');
+// ─── Intersection Observer for fade animations ────────────────
+useEffect(() => {
+  const elements = document.querySelectorAll('.port-fade');
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
         }
       });
-    }, 800); // slight delay after data loads
+    },
+    { threshold: 0.1, rootMargin: '0px 0px -100px 0px' }
+  );
 
-    return () => observer.disconnect();
-  }, [videos, categories, loading]); // re-run when content changes
+  elements.forEach((el) => {
+    el.classList.remove('visible'); // reset fade on new page
+    observer.observe(el);
+  });
 
-  // ─── Escape to close modal ─────────────────────────────────────
+  return () => observer.disconnect();
+}, [paginatedVideos]); // <-- re-run whenever page changes
+ 
+  // ─── Close modal on escape ─────────────────────────────────────
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setSelectedVideo(null);
@@ -135,12 +132,7 @@ export function Portfolio() {
     return () => window.removeEventListener('keydown', handleEscape);
   }, []);
 
-  // ─── Pagination ────────────────────────────────────────────────
-  const totalPages = Math.ceil(videos.length / itemsPerPage);
-  const paginatedVideos = videos.slice(
-    currentPage * itemsPerPage,
-    (currentPage + 1) * itemsPerPage
-  );
+
 
   // ─── Render ─────────────────────────────────────────────────────
   return (
@@ -160,7 +152,7 @@ export function Portfolio() {
       <section
         ref={sectionRef}
         id="portfolio"
-        className="py-24 bg-[#222120] relative z-10 min-h-[80vh]" // ← key fix: z-index + min height
+        className="py-24 bg-[#222120] relative z-10 min-h-[80vh]"
       >
         <div className="container mx-auto px-6">
           {/* Header */}
@@ -193,9 +185,7 @@ export function Portfolio() {
               Loading portfolio...
             </div>
           ) : error ? (
-            <div className="text-center py-20 text-red-400 text-xl">
-              {error}
-            </div>
+            <div className="text-center py-20 text-red-400 text-xl">{error}</div>
           ) : paginatedVideos.length === 0 ? (
             <div className="text-center py-20 text-gray-400 text-xl">
               No videos found in this category.
@@ -210,22 +200,36 @@ export function Portfolio() {
                     style={{ transitionDelay: `${index * 100}ms` }}
                     onClick={() => setSelectedVideo(item)}
                   >
-                    {item.thumbnail_url ? (
-                      <img
-                        src={item.thumbnail_url}
-                        alt={item.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-500">
-                        No thumbnail
-                      </div>
-                    )}
+                    {/* Thumbnail / Video fallback */}
+                    <div className="w-full h-full overflow-hidden">
+                      {item.thumbnail_url ? (
+                        <img
+                          src={getMediaUrl(item.thumbnail_url) || ''}
+                          alt={item.title}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          onError={(e) => {
+                            const video = document.createElement('video');
+                            video.src = getMediaUrl(item.video_url || item.video_file) || '';
+                            video.muted = true;
+                            video.preload = 'metadata';
+                            video.className = 'w-full h-full object-cover';
+                            e.currentTarget.replaceWith(video);
+                          }}
+                        />
+                      ) : (
+                        <video
+                          src={getMediaUrl(item.video_url || item.video_file) || ''}
+                          muted
+                          preload="metadata"
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                    </div>
 
                     {/* Gradient overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
-                    {/* Play icon on hover */}
+                    {/* Play icon */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <div className="w-16 h-16 rounded-full bg-[#CDFF00]/80 flex items-center justify-center shadow-lg shadow-[#CDFF00]/30 transform group-hover:scale-110 transition-transform">
                         <Play className="w-8 h-8 text-[#222120] fill-[#222120] ml-1" />
@@ -235,16 +239,10 @@ export function Portfolio() {
                     {/* Info */}
                     <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/90 to-transparent">
                       <p className="text-xs text-[#CDFF00] font-medium uppercase tracking-wider mb-1">
-                        {categories.find(c => c.id === item.category.id)?.name || 'Video'}
+                        {categories.find((c) => c.id === item.category.id)?.name || 'Video'}
                       </p>
-                      <h4 className="font-display font-semibold text-white text-lg">
-                        {item.title}
-                      </h4>
-                      {item.couple && (
-                        <p className="text-sm text-gray-300 mt-1">
-                          {item.couple}
-                        </p>
-                      )}
+                      <h4 className="font-display font-semibold text-white text-lg">{item.title}</h4>
+                      {item.couple && <p className="text-sm text-gray-300 mt-1">{item.couple}</p>}
                     </div>
                   </div>
                 ))}
@@ -311,14 +309,17 @@ export function Portfolio() {
             <div className="w-full h-full relative">
               {selectedVideo.thumbnail_url ? (
                 <img
-                  src={selectedVideo.thumbnail_url}
+                  src={getMediaUrl(selectedVideo.thumbnail_url) || ''}
                   alt={selectedVideo.title}
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gray-900 flex items-center justify-center text-gray-500 text-xl">
-                  No preview available
-                </div>
+                <video
+                  src={getMediaUrl(selectedVideo.video_url || selectedVideo.video_file) || ''}
+                  className="w-full h-full object-cover"
+                  controls
+                  autoPlay
+                />
               )}
 
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60">

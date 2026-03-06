@@ -1,16 +1,17 @@
-
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { API_BASE_URL } from '../constants/urls';
+import { useEffect, useRef, useState, useCallback } from "react";
+import { Link } from "react-router-dom";
+import { API_BASE_URL } from "../constants/urls";
 
 interface HeroApiResponse {
   success: boolean;
-  data: {
-    heading: string;
-    subtitle: string;
-    background_video_url?: string;
-    background_video_file?: string;
-  };
+  data: HeroData;
+}
+
+interface HeroData {
+  heading: string;
+  subtitle: string;
+  background_video_url?: string;
+  background_video_file?: string;
 }
 
 interface HeroProps {
@@ -19,37 +20,31 @@ interface HeroProps {
 
 export function Hero({ isReady = true }: HeroProps) {
   const sectionRef = useRef<HTMLElement>(null);
+
   const [visible, setVisible] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-
-  const [heroData, setHeroData] = useState<HeroApiResponse['data'] | null>(null);
+  const [heroData, setHeroData] = useState<HeroData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fallbackData = {
-    heading: "Wedding Films That\nMove People.",
+  // fallback text if backend fails
+  const fallbackData: HeroData = {
+    heading: "Wedding Films That Move\nPeople.",
     subtitle: "Delivered On Time. Every Time.",
-    background_video_url: undefined,
-    background_video_file: undefined,
   };
 
   const fetchHero = useCallback(async () => {
     try {
-      setLoading(true);
-
       const response = await fetch(`${API_BASE_URL}hero/`);
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
       const json: HeroApiResponse = await response.json();
 
-      if (!json.success || !json.data) {
-        throw new Error("Invalid API response");
+      if (json.success && json.data) {
+        setHeroData(json.data);
+      } else {
+        setHeroData(fallbackData);
       }
-
-      setHeroData(json.data);
     } catch (err) {
       console.error("Hero fetch failed:", err);
       setHeroData(fallbackData);
@@ -74,15 +69,18 @@ export function Hero({ isReady = true }: HeroProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // determine correct video
   const videoSrc =
-    heroData?.background_video_file ||
-    heroData?.background_video_url ||
-    "https://assets.mixkit.co/videos/preview/mixkit-wedding-couple-in-a-romantic-sunset-scene-34374-large.mp4";
+    heroData?.background_video_file && heroData.background_video_file.trim() !== ""
+      ? heroData.background_video_file
+      : heroData?.background_video_url && heroData.background_video_url.trim() !== ""
+      ? heroData.background_video_url
+      : "/77929-564459462_tiny.mp4";
 
-  const posterSrc =
-    heroData?.background_video_file || heroData?.background_video_url
-      ? undefined
-      : "https://images.unsplash.com/photo-1519741497674-611481863552?w=1920&q=80";
+  const posterSrc = "/couple.jpg";
+
+  const heading = heroData?.heading || fallbackData.heading;
+  const subtitle = heroData?.subtitle || fallbackData.subtitle;
 
   return (
     <>
@@ -143,6 +141,9 @@ export function Hero({ isReady = true }: HeroProps) {
           letter-spacing:4px;
           font-size:0.8rem;
           font-weight:500;
+          opacity:0;
+          transform:translateY(8px);
+          animation:fadeInUp 0.6s ease-out forwards;
         }
 
         .hero-title{
@@ -214,28 +215,19 @@ export function Hero({ isReady = true }: HeroProps) {
             alignItems: "center",
           }}
         >
- <a href="/" style={{ display: "flex", alignItems: "center" }}>
-  <img
-    src="/logoImage.png"
-    alt="S&D Media"
-    style={{
-      height: "80px",
-      width: "auto",
-      objectFit: "contain",
-      cursor: "pointer",
-      transition: "transform 0.3s ease, opacity 0.3s ease",
-    }}
-    onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
-    onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
-  />
-</a>
+          <a href="/">
+            <img
+              src="/logoImage.png"
+              alt="S&D Media"
+              style={{ height: "80px" }}
+            />
+          </a>
 
           <div style={{ display: "flex", gap: "2rem", alignItems: "center" }}>
             <a href="#home">Home</a>
             <a href="#portfolio">Portfolio</a>
             <a href="#pricing">Pricing</a>
             <Link to="/team">Our Team</Link>
-
             <a
               href="#pricing"
               style={{
@@ -255,9 +247,19 @@ export function Hero({ isReady = true }: HeroProps) {
       {/* HERO */}
       <section ref={sectionRef} id="home" className="hero">
         <div className="hero-video-wrap">
-          <video autoPlay muted loop playsInline poster={posterSrc}>
-            <source src={videoSrc} type="video/mp4" />
-          </video>
+          {!loading && (
+            <video
+              key={videoSrc}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              poster={posterSrc}
+            >
+              <source src={videoSrc} type="video/mp4" />
+            </video>
+          )}
         </div>
 
         <div className="hero-overlay"></div>
@@ -265,13 +267,8 @@ export function Hero({ isReady = true }: HeroProps) {
         <div className={`hero-center ${visible ? "visible" : ""}`}>
           <span className="hero-script">WEDDING VIDEO EDITING</span>
 
-          <h1 className="hero-title">
-            {loading ? "Loading..." : heroData?.heading || fallbackData.heading}
-          </h1>
-
-          <p className="hero-subtitle">
-            {loading ? "..." : heroData?.subtitle || fallbackData.subtitle}
-          </p>
+          <h1 className="hero-title">{heading}</h1>
+          <p className="hero-subtitle">{subtitle}</p>
 
           <p className="hero-desc">
             Professional post-production for wedding videographers who refuse
@@ -282,9 +279,8 @@ export function Hero({ isReady = true }: HeroProps) {
             <a href="#pricing" className="btn-primary">
               Pricing
             </a>
-
             <a href="#portfolio" className="btn-secondary">
-              Portfolio 
+              Portfolio
             </a>
           </div>
         </div>

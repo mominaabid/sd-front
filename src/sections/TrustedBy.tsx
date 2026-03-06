@@ -13,55 +13,64 @@ export function TrustedBy() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-  const fetchLogos = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}logos/`);
+  useEffect(() => {
+    const fetchLogos = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}logos/`);
+        const result = await response.json();
 
-      const result = await response.json();
-
-      console.log("API response:", result);
-
-      if (result.success && result.data) {
-        setLogos(result.data);
-      } else {
-        throw new Error("Invalid API structure");
+        if (result.success && result.data) {
+          setLogos(result.data);
+        } else {
+          throw new Error("Invalid API structure");
+        }
+      } catch (err) {
+        console.error("Fetch error:", err);
+        setError("Failed to load logos");
+      } finally {
+        setLoading(false);
       }
+    };
 
-    } catch (err) {
-      console.error("Fetch error:", err);
-      setError("Failed to load logos");
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchLogos();
+  }, []);
 
-  fetchLogos();
-}, []);
+  if (loading) return <div className="text-center py-10 text-white">Loading logos...</div>;
+  if (error) return <div className="text-center py-10 text-red-400">{error}</div>;
+  if (logos.length === 0) return <div className="text-center py-10 text-white">No logos available</div>;
 
-  if (loading) {
-    return <div className="text-center py-10 text-white">Loading logos...</div>;
-  }
-
-  if (error) {
-    return <div className="text-center py-10 text-red-400">{error}</div>;
-  }
-
-  if (logos.length === 0) {
-    return <div className="text-center py-10 text-white">No logos available</div>;
-  }
-
-  const allLogos = [...logos, ...logos]; // for infinite scroll
+  // Repeat logos enough times to make the scroll seamless
+  const repeatedLogos = [...logos, ...logos, ...logos];
 
   return (
     <section className="py-16 bg-[#2E2C2A] border-y border-white/10 overflow-hidden">
+      <style>
+        {`
+          @keyframes scrollLeft {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-33.33%); }
+          }
+
+          .logo-scroll {
+            display: flex;
+            gap: 4rem;
+            width: max-content;
+            animation: scrollLeft 30s linear infinite;
+          }
+
+          .logo-scroll:hover {
+            animation-play-state: paused;
+          }
+        `}
+      </style>
+
       <h3 className="text-center text-sm font-medium tracking-[0.2em] uppercase text-white/50 mb-10">
         Trusted By Leading Wedding Videographers
       </h3>
 
       <div className="overflow-hidden relative">
-        <div className="flex animate-scroll-left gap-16 w-max">
-          {allLogos.map((logo, index) => (
+        <div className="logo-scroll">
+          {repeatedLogos.map((logo, index) => (
             <a
               key={`${logo.id}-${index}`}
               href={logo.link || "#"}
@@ -73,7 +82,7 @@ export function TrustedBy() {
                 src={logo.logo_url}
                 alt={logo.company_name}
                 loading="lazy"
-                className="max-h-10 w-auto object-contain opacity-70 hover:opacity-100 transition"
+                className="max-h-20 w-auto object-contain opacity-70 hover:opacity-100 transition"
               />
             </a>
           ))}
