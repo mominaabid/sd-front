@@ -70,8 +70,8 @@ export function Hero({ isReady = true }: HeroProps) {
 
   const navLinks = [
     { label: "Home", href: "#home", type: "anchor" },
-    { label: "Portfolio", href: "#portfolio", type: "anchor" },
-    { label: "Pricing", href: "#pricing", type: "anchor" },
+  { label: "Portfolio", href: "#portfolio", type: "anchor" },
+  { label: "Pricing", href: "#pricing", type: "anchor" },
     { label: "Our Team", href: "/team", type: "router" },
   ];
 

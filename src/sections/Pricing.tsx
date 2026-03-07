@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Check, X } from 'lucide-react';
-import { API_BASE_URL } from '../constants/urls'; // your correct import
+import { API_BASE_URL } from '../constants/urls';
 
 interface VideoType {
   id: number;
@@ -97,7 +97,6 @@ export default function Pricing() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
       const result = await res.json();
       console.log('Backend response:', result);
 
@@ -114,7 +113,13 @@ export default function Pricing() {
   const closeModal = () => {
     setSelectedPlan(null);
     setIsSubmitted(false);
-    setFormData({ personalName: '', companyName: '', phone: '', email: '', videoTypes: [] });
+    setFormData({
+      personalName: '',
+      companyName: '',
+      phone: '',
+      email: '',
+      videoTypes: [],
+    });
   };
 
   return (
@@ -136,8 +141,10 @@ export default function Pricing() {
                 {card.is_most_popular && (
                   <span className="absolute -top-3 left-6 px-3 py-1 bg-primary text-xs rounded-full">Most Popular</span>
                 )}
+
                 <h3 className="text-xl font-bold text-[#F3F3F2]">{card.heading}</h3>
                 {card.subheading && <p className="text-sm text-muted-foreground mb-4">{card.subheading}</p>}
+
                 {card.features && card.features.length > 0 && (
                   <ul className="space-y-2 mb-4">
                     {card.features.map((f, i) => (
@@ -147,6 +154,7 @@ export default function Pricing() {
                     ))}
                   </ul>
                 )}
+
                 <button
                   onClick={() => setSelectedPlan(card)}
                   className="w-full py-3 mt-4 border border-primary/40 text-primary rounded-md hover:bg-primary/10 transition-colors"
@@ -166,7 +174,10 @@ export default function Pricing() {
             className="bg-[#363432] p-6 md:p-8 rounded-3xl max-w-lg w-full shadow-lg border border-border/50"
             onClick={(e) => e.stopPropagation()}
           >
-            <button onClick={closeModal} className="absolute top-4 right-4 text-[#DADADA] hover:text-primary transition-colors">
+            <button
+              onClick={closeModal}
+              className="absolute top-4 right-4 text-[#DADADA] hover:text-primary transition-colors"
+            >
               <X className="w-5 h-5" />
             </button>
 
@@ -174,7 +185,9 @@ export default function Pricing() {
               <div className="text-center py-8">
                 <Check className="w-10 h-10 mx-auto text-primary mb-4" />
                 <h3 className="text-2xl text-[#F3F3F2] mb-2 font-semibold">Thank You!</h3>
-                <p className="text-[#DADADA] mb-4">We've received your inquiry. Our team will contact you shortly.</p>
+                <p className="text-[#DADADA] mb-4">
+                  We've received your inquiry. Our team will contact you shortly.
+                </p>
                 <button
                   onClick={closeModal}
                   className="px-6 py-2 bg-primary text-[#222120] rounded-lg font-medium hover:bg-primary/90 transition-colors"

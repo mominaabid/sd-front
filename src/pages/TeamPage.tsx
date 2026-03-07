@@ -63,12 +63,11 @@ export function TeamPage() {
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
 
   const navLinks = [
-    { label: 'Home',      href: '/#home',      type: 'anchor' },
-    { label: 'Portfolio', href: '/#portfolio',  type: 'anchor' },
-    { label: 'Pricing',   href: '/#pricing',    type: 'anchor' },
-    { label: 'Our Team',  href: '/team',        type: 'router' },
-  ];
-
+  { label: 'Home', href: '/#home', type: 'anchor' },
+  { label: 'Portfolio', href: '/#portfolio', type: 'anchor' },
+  { label: 'Pricing', href: '/#pricing', type: 'anchor' },
+  { label: 'Our Team', href: '/team', type: 'router' },
+];
   // ── Fetch team
   useEffect(() => {
     (async () => {
@@ -84,6 +83,26 @@ export function TeamPage() {
       } finally { setLoadingTeam(false); }
     })();
   }, []);
+
+  useEffect(() => {
+  window.scrollTo(0, 0);
+}, []);
+
+useEffect(() => {
+  if (window.location.hash) {
+    const id = window.location.hash.replace('#', '');
+
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    }, 100);
+  }
+}, []);
 
   // ── Fetch BTS
   useEffect(() => {
@@ -103,11 +122,47 @@ export function TeamPage() {
 
   // ── Intersection observer for fade-up
   useEffect(() => {
+    const els = Array.from(pageRef.current?.querySelectorAll('.tp-fade') ?? []);
+
+    // Reset so re-runs after data load work correctly
+    els.forEach(el => {
+      el.classList.remove('tp-visible');
+      (el as HTMLElement).style.transitionDelay = '';
+    });
+
+    // Group elements by their parent so cards in the same grid stagger together
+    const seen = new Map<Element, number>();
+
     const observer = new IntersectionObserver(
-      entries => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('tp-visible'); observer.unobserve(e.target); } }),
-      { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const target = entry.target as HTMLElement;
+
+          // Count siblings already triggered in this parent to compute stagger
+          const parent = target.parentElement ?? document.body;
+          const siblingIndex = seen.get(parent) ?? 0;
+          seen.set(parent, siblingIndex + 1);
+
+          // Apply stagger delay only at trigger time
+          const delay = siblingIndex * 60;
+          target.style.transitionDelay = `${delay}ms`;
+
+          requestAnimationFrame(() => {
+            setTimeout(() => {
+              target.classList.add('tp-visible');
+              // Clear delay after animation completes so hover transitions aren't delayed
+              setTimeout(() => { target.style.transitionDelay = '0ms'; }, 750 + delay);
+            }, 16);
+          });
+
+          observer.unobserve(target);
+        });
+      },
+      { threshold: 0.05, rootMargin: '0px 0px -32px 0px' }
     );
-    pageRef.current?.querySelectorAll('.tp-fade').forEach(el => observer.observe(el));
+
+    els.forEach(el => observer.observe(el));
     return () => observer.disconnect();
   }, [teamMembers, btsMedia]);
 
@@ -162,15 +217,17 @@ export function TeamPage() {
         /* ── Scroll reveal ── */
         .tp-fade {
           opacity: 0;
-          transform: translateY(40px);
+          transform: translateY(24px) translateZ(0);
           transition:
-            opacity  1s cubic-bezier(0.16, 1, 0.3, 1),
-            transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity   0.75s cubic-bezier(0.16, 1, 0.3, 1),
+            transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
           will-change: opacity, transform;
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
         }
         .tp-fade.tp-visible {
           opacity: 1;
-          transform: translateY(0);
+          transform: translateY(0) translateZ(0);
         }
 
         /* ══════════════════════════
@@ -326,7 +383,7 @@ export function TeamPage() {
         .tp-header {
           background: #1a1815;
           border-bottom: 1px solid #3a3835;
-          padding: clamp(100px,12vw,136px) clamp(16px,5vw,48px) clamp(40px,6vw,72px);
+          padding: calc(var(--nav-h) + clamp(32px,5vw,56px)) clamp(16px,5vw,48px) clamp(40px,6vw,72px);
           text-align: center;
         }
         .tp-header-eyebrow {
@@ -380,15 +437,18 @@ export function TeamPage() {
             transform  0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
             box-shadow 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
           will-change: transform;
+          transform: translateZ(0);
+          backface-visibility: hidden;
         }
-        .tp-card:hover { transform: translateY(-6px); box-shadow: 0 20px 48px rgba(0,0,0,0.55); }
+        .tp-card:hover { transform: translateY(-6px) translateZ(0); box-shadow: 0 20px 48px rgba(0,0,0,0.55); }
         .tp-card-img-wrap { position:relative; aspect-ratio:3/4; overflow:hidden; }
         .tp-card-img-wrap img {
           width:100%; height:100%; object-fit:cover;
           transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
           will-change: transform;
+          transform: translateZ(0);
         }
-        .tp-card:hover .tp-card-img-wrap img { transform: scale(1.1); }
+        .tp-card:hover .tp-card-img-wrap img { transform: scale(1.1) translateZ(0); }
 
         /* Default label (always visible) */
         .tp-card-label {
@@ -509,8 +569,10 @@ export function TeamPage() {
             transform  0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
             box-shadow 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
           will-change: transform;
+          transform: translateZ(0);
+          backface-visibility: hidden;
         }
-        .tp-bts-item:hover { transform:translateY(-4px); box-shadow:0 14px 36px rgba(0,0,0,0.5); }
+        .tp-bts-item:hover { transform: translateY(-4px) translateZ(0); box-shadow:0 14px 36px rgba(0,0,0,0.5); }
         .tp-bts-item img,
         .tp-bts-item video {
           width:100%;
@@ -519,9 +581,10 @@ export function TeamPage() {
           display:block;
           transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
           will-change: transform;
+          transform: translateZ(0);
         }
         .tp-bts-item:hover img,
-        .tp-bts-item:hover video { transform:scale(1.08); }
+        .tp-bts-item:hover video { transform: scale(1.08) translateZ(0); }
         .tp-bts-caption {
           position:absolute; inset-x:0; bottom:0;
           padding:28px 12px 12px;
@@ -617,62 +680,99 @@ export function TeamPage() {
       `}</style>
 
       {/* ─── Mobile overlay ─── */}
-      <div className={`tp-overlay ${mobileMenuOpen ? 'open' : ''}`} onClick={() => setMobileMenuOpen(false)} />
+<div
+  className={`tp-overlay ${mobileMenuOpen ? 'open' : ''}`}
+  onClick={() => setMobileMenuOpen(false)}
+/>
 
-      {/* ─── Mobile drawer ─── */}
-      <div className={`tp-drawer ${mobileMenuOpen ? 'open' : ''}`}>
-        <div className="tp-drawer-hdr">
-          <a href="/" className="tp-logo" onClick={() => setMobileMenuOpen(false)}>
-            <img src="/logoImage.png" alt="S&D Media" />
-          </a>
-          <button className="tp-ham open" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu">
-            <span /><span /><span />
-          </button>
-        </div>
-        <nav className="tp-drawer-body">
-          {navLinks.map(({ label, href, type }) =>
-            type === 'router' ? (
-              <Link key={label} to={href} className="tp-mob-link" onClick={() => setMobileMenuOpen(false)}>
-                {label}<span className="tp-mob-arr">›</span>
-              </Link>
-            ) : (
-              <a key={label} href={href} className="tp-mob-link" onClick={() => setMobileMenuOpen(false)}>
-                {label}<span className="tp-mob-arr">›</span>
-              </a>
-            )
-          )}
-        </nav>
-        <div className="tp-drawer-ftr">
-          <a href="/#pricing" className="tp-mob-cta" onClick={() => setMobileMenuOpen(false)}>
-            Start a Project →
-          </a>
-        </div>
-      </div>
+{/* ─── Mobile drawer ─── */}
+<div className={`tp-drawer ${mobileMenuOpen ? 'open' : ''}`}>
+  <div className="tp-drawer-hdr">
+    <Link to="/" className="tp-logo" onClick={() => setMobileMenuOpen(false)}>
+      <img src="/logoImage.png" alt="S&D Media" />
+    </Link>
 
-      {/* ─── Navbar ─── */}
-      <nav className="tp-nav">
-        <div className="tp-nav-inner">
-          <a href="/" className="tp-logo">
-            <img src="/logoImage.png" alt="S&D Media" />
-          </a>
-          <ul className="tp-nav-links">
-            {navLinks.map(({ label, href, type }) => (
-              <li key={label}>
-                {type === 'router' ? <Link to={href}>{label}</Link> : <a href={href}>{label}</a>}
-              </li>
-            ))}
-            <li><a href="/#pricing" className="tp-nav-cta">Start a Project</a></li>
-          </ul>
-          <button
-            className={`tp-ham ${mobileMenuOpen ? 'open' : ''}`}
-            onClick={() => setMobileMenuOpen(v => !v)}
-            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-            aria-expanded={mobileMenuOpen}
-          >
-            <span /><span /><span />
-          </button>
-        </div>
-      </nav>
+    <button
+      className={`tp-ham ${mobileMenuOpen ? 'open' : ''}`}
+      onClick={() => setMobileMenuOpen(false)}
+      aria-label="Close menu"
+    >
+      <span />
+      <span />
+      <span />
+    </button>
+  </div>
+  <nav className="tp-drawer-body">
+  {navLinks.map(({ label, href, type }) =>
+    type === 'router' ? (
+      <Link
+        key={label}
+        to={href}
+        className="tp-mob-link"
+        onClick={() => setMobileMenuOpen(false)}
+      >
+        {label} <span className="tp-mob-arr">›</span>
+      </Link>
+    ) : (
+      <a
+        key={label}
+        href={href}
+        className="tp-mob-link"
+        onClick={() => setMobileMenuOpen(false)}
+      >
+        {label} <span className="tp-mob-arr">›</span>
+      </a>
+    )
+  )}
+</nav>
+  <div className="tp-drawer-ftr">
+    <a
+      href="/#pricing"
+      className="tp-mob-cta"
+      onClick={() => setMobileMenuOpen(false)}
+    >
+      Start a Project →
+    </a>
+  </div>
+</div>
+
+{/* ─── Navbar ─── */}
+<nav className="tp-nav">
+  <div className="tp-nav-inner">
+    <Link to="/" className="tp-logo">
+      <img src="/logoImage.png" alt="S&D Media" />
+    </Link>
+
+    {/* Desktop / tablet links */}
+    <ul className="tp-nav-links">
+  {navLinks.map(({ label, href, type }) => (
+    <li key={label}>
+      {type === 'router'
+        ? <Link to={href}>{label}</Link>
+        : <a href={href}>{label}</a>}
+    </li>
+  ))}
+
+  <li>
+    <a href="/#pricing" className="tp-nav-cta">
+      Start a Project
+    </a>
+  </li>
+</ul>
+
+    {/* Hamburger for mobile */}
+    <button
+      className={`tp-ham ${mobileMenuOpen ? 'open' : ''}`}
+      onClick={() => setMobileMenuOpen((v) => !v)}
+      aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+      aria-expanded={mobileMenuOpen}
+    >
+      <span />
+      <span />
+      <span />
+    </button>
+  </div>
+</nav>
 
       {/* ─── Page Header ─── */}
       <div className="tp-header">
@@ -691,11 +791,10 @@ export function TeamPage() {
           <div className="tp-state error">{errorTeam}</div>
         ) : (
           <div className="tp-team-grid">
-            {teamMembers.map((member, i) => (
+            {teamMembers.map((member) => (
               <div
                 key={member.id}
                 className="tp-fade tp-card"
-                style={{ transitionDelay: `${i * 70}ms` }}
                 onClick={() => {
                   // On touch devices open bottom panel; on desktop rely on CSS hover
                   if (window.matchMedia('(hover: none)').matches) {
@@ -754,13 +853,12 @@ export function TeamPage() {
             <div className="tp-state">No behind-the-scenes content yet.</div>
           ) : (
             <div className="tp-bts-grid">
-              {btsMedia.map((item, i) => {
+              {btsMedia.map((item) => {
                 const lbIdx = lightboxItems.findIndex(x => x.src === item.media_url);
                 return (
                   <div
                     key={item.id}
                     className="tp-fade tp-bts-item"
-                    style={{ transitionDelay: `${i * 50}ms` }}
                     onClick={() => setLightboxIndex(lbIdx >= 0 ? lbIdx : null)}
                   >
                     {item.type === 'image' ? (

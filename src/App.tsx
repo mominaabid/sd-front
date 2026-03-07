@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useState, useCallback, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Navigation } from './sections/Navigation';
 import { Hero } from './sections/Hero';
 import { TrustedBy } from './sections/TrustedBy';
@@ -9,12 +9,38 @@ import { Portfolio } from './sections/Portfolio';
 import { VideoTestimonials } from './sections/VideoTestimonials';
 import Pricing from './sections/Pricing';
 import { TextReviews } from './sections/TextReviews';
-import { CombinedFooter } from './sections/CombinedFooter';     // contact + rich footer
-import { Footer } from './sections/Footer';                     // simple footer
+import { CombinedFooter } from './sections/CombinedFooter';
+import { Footer } from './sections/Footer';
 import { Preloader } from './components/Preloader';
 import { ScrollToTop } from './components/ScrollToTop';
 import { WhatsAppWidget } from './components/WhatsAppWidget';
 import { TeamPage } from './pages/TeamPage';
+
+// ✅ Scroll to hash after page content is ready
+function ScrollToHash() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!location.hash) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    const id = location.hash.replace('#', '');
+
+    // Delay scroll to ensure DOM is rendered
+    const timeout = setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(timeout);
+  }, [location]);
+
+  return null;
+}
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -30,32 +56,40 @@ function App() {
       <div className={`min-h-screen bg-[#222120] ${isLoading ? 'overflow-hidden max-h-screen' : ''}`}>
         <Navigation />
 
+        <ScrollToHash />
+
         <Routes>
-          {/* Home Page – full experience with contact + footer */}
+          {/* Home Page */}
           <Route
             path="/"
             element={
               <main>
-                <Hero isReady={!isLoading} />
+                <section id="home">
+                  <Hero isReady={!isLoading} />
+                </section>
                 <TrustedBy />
                 <WineShowcase />
                 <Museum />
-                <Portfolio />
+                <section id="portfolio">
+                  <Portfolio />
+                </section>
                 <VideoTestimonials />
-                <Pricing />
+                <section id="pricing">
+                  <Pricing />
+                </section>
                 <TextReviews />
-                <CombinedFooter />           {/* contact form + rich footer content */}
+                <CombinedFooter />
               </main>
             }
           />
 
-          {/* Team Page – only simple footer at the bottom */}
+          {/* Team Page */}
           <Route
             path="/team"
             element={
               <>
                 <TeamPage />
-                <Footer />                    {/* ← simple version here */}
+                <Footer />
               </>
             }
           />
