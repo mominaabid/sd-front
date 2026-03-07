@@ -21,13 +21,11 @@ interface HeroProps {
 export function Hero({ isReady = true }: HeroProps) {
   const sectionRef = useRef<HTMLElement>(null);
 
-  const [visible, setVisible] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [heroData, setHeroData] = useState<HeroData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [scrolled, setScrolled] = useState(false);
 
-  // fallback text if backend fails
   const fallbackData: HeroData = {
     heading: "Wedding Films That Move\nPeople.",
     subtitle: "Delivered On Time. Every Time.",
@@ -37,14 +35,9 @@ export function Hero({ isReady = true }: HeroProps) {
     try {
       const response = await fetch(`${API_BASE_URL}hero/`);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
       const json: HeroApiResponse = await response.json();
-
-      if (json.success && json.data) {
-        setHeroData(json.data);
-      } else {
-        setHeroData(fallbackData);
-      }
+      if (json.success && json.data) setHeroData(json.data);
+      else setHeroData(fallbackData);
     } catch (err) {
       console.error("Hero fetch failed:", err);
       setHeroData(fallbackData);
@@ -53,236 +46,552 @@ export function Hero({ isReady = true }: HeroProps) {
     }
   }, []);
 
+  useEffect(() => { if (isReady) fetchHero(); }, [isReady, fetchHero]);
   useEffect(() => {
-    if (isReady) fetchHero();
-  }, [isReady, fetchHero]);
-
+    document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileMenuOpen]);
   useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 100);
-    return () => clearTimeout(t);
+    const onScroll = () => setScrolled(window.scrollY > 30);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 60);
-    window.addEventListener("scroll", handleScroll);
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // determine correct video
   const videoSrc =
-    heroData?.background_video_file && heroData.background_video_file.trim() !== ""
+    heroData?.background_video_file?.trim()
       ? heroData.background_video_file
-      : heroData?.background_video_url && heroData.background_video_url.trim() !== ""
+      : heroData?.background_video_url?.trim()
       ? heroData.background_video_url
       : "/77929-564459462_tiny.mp4";
 
   const posterSrc = "/couple.jpg";
-
   const heading = heroData?.heading || fallbackData.heading;
   const subtitle = heroData?.subtitle || fallbackData.subtitle;
+
+  const navLinks = [
+    { label: "Home", href: "#home", type: "anchor" },
+    { label: "Portfolio", href: "#portfolio", type: "anchor" },
+    { label: "Pricing", href: "#pricing", type: "anchor" },
+    { label: "Our Team", href: "/team", type: "router" },
+  ];
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap');
 
         :root {
-          --lime:#CDFF00;
-          --dark:#222120;
-          --light:#F3F3F2;
+          --lime: #C8F400;
+          --dark: #141312;
+          --dark-mid: #1c1b19;
+          --light: #F0EDE8;
+          --muted: rgba(240,237,232,0.45);
+          --nav-h: 72px;
+          --radius: 12px;
         }
 
-        body{
-          font-family:'DM Sans',sans-serif;
-          background:var(--dark);
-          color:var(--light);
-          overflow-x:hidden;
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+          font-family: 'Outfit', sans-serif;
+          background: var(--dark);
+          color: var(--light);
+          overflow-x: hidden;
+          -webkit-font-smoothing: antialiased;
         }
 
-        .hero{
-          position:relative;
-          min-height:100vh;
-          display:flex;
-          align-items:center;
-          justify-content:center;
+        /* ══ NAVBAR ══ */
+        .navbar {
+          position: fixed;
+          inset: 0 0 auto 0;
+          height: var(--nav-h);
+          z-index: 100;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0 clamp(16px, 4vw, 48px);
+          transition: background 0.4s, box-shadow 0.4s, border-color 0.4s;
+          border-bottom: 1px solid transparent;
+        }
+        .navbar.scrolled {
+          background: rgba(20,19,18,0.9);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-bottom-color: rgba(255,255,255,0.06);
+          box-shadow: 0 4px 32px rgba(0,0,0,0.45);
+        }
+        .navbar-inner {
+          width: 100%;
+          max-width: 1280px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
         }
 
-        .hero-video-wrap{
-          position:absolute;
-          inset:0;
-          overflow:hidden;
-          z-index:0;
+        .nav-logo { flex-shrink: 0; display: flex; align-items: center; text-decoration: none; }
+        .nav-logo img { height: clamp(40px, 5vw, 54px); width: auto; display: block; }
+
+        .nav-links-desktop {
+          display: flex;
+          align-items: center;
+          gap: clamp(18px, 2.5vw, 36px);
+          list-style: none;
+        }
+        .nav-links-desktop li a {
+          color: rgba(240,237,232,0.7);
+          text-decoration: none;
+          font-size: 0.875rem;
+          font-weight: 400;
+          letter-spacing: 0.4px;
+          padding-bottom: 3px;
+          position: relative;
+          transition: color 0.25s;
+        }
+        .nav-links-desktop li a::after {
+          content: '';
+          position: absolute;
+          bottom: 0; left: 0;
+          width: 0; height: 1px;
+          background: var(--lime);
+          transition: width 0.3s cubic-bezier(0.25,1,0.5,1);
+        }
+        .nav-links-desktop li a:hover { color: var(--light); }
+        .nav-links-desktop li a:hover::after { width: 100%; }
+
+        .nav-cta {
+          background: var(--lime) !important;
+          color: #111 !important;
+          padding: 10px 20px !important;
+          border-radius: var(--radius) !important;
+          font-weight: 600 !important;
+          font-size: 0.85rem !important;
+          white-space: nowrap;
+          overflow: hidden;
+          position: relative;
+          transition: transform 0.25s, box-shadow 0.25s !important;
+        }
+        .nav-cta::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: rgba(255,255,255,0.2);
+          opacity: 0;
+          transition: opacity 0.25s;
+        }
+        .nav-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200,244,0,0.3) !important; }
+        .nav-cta:hover::before { opacity: 1; }
+        .nav-cta::after { display: none !important; }
+
+        /* Hamburger */
+        .hamburger {
+          display: none;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          width: 44px; height: 44px;
+          gap: 5px;
+          cursor: pointer;
+          background: none;
+          border: 1px solid rgba(255,255,255,0.12);
+          border-radius: 10px;
+          padding: 0;
+          transition: border-color 0.2s, background 0.2s;
+          flex-shrink: 0;
+        }
+        .hamburger:hover { border-color: rgba(200,244,0,0.45); background: rgba(200,244,0,0.05); }
+        .hamburger span {
+          display: block;
+          width: 20px; height: 1.5px;
+          background: var(--light);
+          border-radius: 2px;
+          transition: transform 0.38s cubic-bezier(0.23,1,0.32,1), opacity 0.22s, background 0.22s;
+        }
+        .hamburger.open span { background: var(--lime); }
+        .hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+        .hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+        .hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+        /* Mobile overlay */
+        .mob-overlay {
+          display: none;
+          position: fixed; inset: 0;
+          background: rgba(0,0,0,0);
+          z-index: 105;
+          pointer-events: none;
+          transition: background 0.35s;
+        }
+        .mob-overlay.open { background: rgba(0,0,0,0.65); pointer-events: auto; backdrop-filter: blur(4px); }
+
+        /* Mobile drawer */
+        .mob-drawer {
+          display: none;
+          position: fixed;
+          top: 0; right: 0; bottom: 0;
+          width: min(340px, 88vw);
+          background: var(--dark-mid);
+          z-index: 106;
+          flex-direction: column;
+          transform: translateX(100%);
+          transition: transform 0.42s cubic-bezier(0.16,1,0.3,1);
+          border-left: 1px solid rgba(255,255,255,0.07);
+        }
+        .mob-drawer.open { transform: translateX(0); }
+
+        .mob-drawer-header {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 0 20px;
+          height: var(--nav-h);
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+          flex-shrink: 0;
+        }
+        .mob-drawer-body { flex: 1; overflow-y: auto; padding: 8px 0; }
+        .mob-nav-link {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 15px 24px;
+          color: rgba(240,237,232,0.75);
+          text-decoration: none;
+          font-size: 1rem;
+          font-weight: 400;
+          letter-spacing: 0.2px;
+          border-bottom: 1px solid rgba(255,255,255,0.04);
+          transition: color 0.2s, background 0.2s, padding-left 0.25s;
+        }
+        .mob-nav-link:last-child { border-bottom: none; }
+        .mob-nav-link:hover { color: var(--light); background: rgba(200,244,0,0.04); padding-left: 30px; }
+        .mob-nav-arrow {
+          font-size: 0.8rem; color: var(--lime);
+          opacity: 0; transform: translateX(-4px);
+          transition: opacity 0.2s, transform 0.2s;
+        }
+        .mob-nav-link:hover .mob-nav-arrow { opacity: 1; transform: translateX(0); }
+        .mob-drawer-footer {
+          padding: 20px 20px 36px;
+          border-top: 1px solid rgba(255,255,255,0.06);
+          flex-shrink: 0;
+        }
+        .mob-cta {
+          display: flex; align-items: center; justify-content: center;
+          width: 100%;
+          background: var(--lime);
+          color: #111;
+          padding: 15px;
+          border-radius: var(--radius);
+          font-weight: 600;
+          font-size: 0.95rem;
+          text-decoration: none;
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .mob-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(200,244,0,0.28); }
+
+        /* Breakpoints */
+        @media (max-width: 860px) {
+          .nav-links-desktop li:nth-child(1),
+          .nav-links-desktop li:nth-child(3) { display: none; }
+        }
+        @media (max-width: 600px) {
+          .nav-links-desktop { display: none; }
+          .hamburger { display: flex; }
+          .mob-overlay { display: block; }
+          .mob-drawer { display: flex; }
         }
 
-        .hero-video-wrap video{
-          width:100%;
-          height:100%;
-          object-fit:cover;
+        /* ══ HERO ══ */
+        .hero {
+          position: relative;
+          min-height: 100svh;
+          display: grid;
+          place-items: center;
+        }
+        .hero-bg {
+          position: absolute; inset: 0; overflow: hidden; z-index: 0;
+        }
+        .hero-bg video {
+          width: 100%; height: 100%; object-fit: cover; transform: scale(1.04);
+        }
+        .hero-gradient {
+          position: absolute; inset: 0; z-index: 1;
+          background:
+            linear-gradient(180deg, rgba(14,13,12,0.52) 0%, transparent 38%, rgba(14,13,12,0.72) 100%),
+            linear-gradient(90deg, rgba(14,13,12,0.38) 0%, transparent 55%);
+        }
+        .hero-vignette {
+          position: absolute; inset: 0; z-index: 2;
+          background: radial-gradient(ellipse at center, transparent 38%, rgba(0,0,0,0.52) 100%);
         }
 
-        .hero-overlay{
-          position:absolute;
-          inset:0;
-          background:rgba(0,0,0,0.55);
-          z-index:1;
+        .hero-content {
+          position: relative;
+          z-index: 3;
+          text-align: center;
+          padding: clamp(100px, 14vw, 140px) clamp(20px, 5vw, 48px) clamp(80px, 10vw, 100px);
+          max-width: 960px;
+          width: 100%;
         }
 
-        .hero-center{
-          position:relative;
-          z-index:2;
-          text-align:center;
-          max-width:900px;
-          padding:0 20px;
+        .hero-eyebrow {
+          display: inline-flex;
+          align-items: center;
+          gap: 12px;
+          color: var(--lime);
+          font-size: clamp(0.62rem, 1.1vw, 0.7rem);
+          font-weight: 500;
+          letter-spacing: 3.5px;
+          text-transform: uppercase;
+          opacity: 0;
+          transform: translateY(10px);
+          animation: fadeUp 0.7s ease forwards 0.1s;
+        }
+        .hero-eyebrow::before, .hero-eyebrow::after {
+          content: ''; display: block;
+          width: 28px; height: 1px;
+          background: var(--lime); opacity: 0.55;
         }
 
-        .hero-script{
-          color:var(--lime);
-          letter-spacing:4px;
-          font-size:0.8rem;
-          font-weight:500;
-          opacity:0;
-          transform:translateY(8px);
-          animation:fadeInUp 0.6s ease-out forwards;
+        .hero-title {
+          font-family: 'Cormorant Garamond', Georgia, serif;
+          font-size: clamp(3.2rem, 8vw, 6.4rem);
+          font-weight: 300;
+          line-height: 1.04;
+          letter-spacing: -0.5px;
+          white-space: pre-line;
+          margin: clamp(18px, 3vw, 26px) 0 clamp(12px, 2vw, 18px);
+          color: var(--light);
+          opacity: 0;
+          transform: translateY(16px);
+          animation: fadeUp 0.95s ease forwards 0.3s;
+        }
+        .hero-title em {
+          font-style: italic;
+          color: var(--lime);
         }
 
-        .hero-title{
-          font-family:'Playfair Display',serif;
-          font-size:clamp(2.5rem,6vw,4.5rem);
-          margin:16px 0;
-          line-height:1.1;
-          white-space:pre-line;
+        .hero-rule {
+          width: 40px; height: 1px;
+          background: linear-gradient(90deg, var(--lime), transparent);
+          margin: 0 auto clamp(12px, 2vw, 18px);
+          opacity: 0;
+          animation: fadeIn 0.6s ease forwards 0.55s;
         }
 
-        .hero-subtitle{
-          font-size:1.6rem;
-          font-weight:500;
-          margin-bottom:16px;
+        .hero-subtitle {
+          font-size: clamp(0.9rem, 1.8vw, 1.15rem);
+          font-weight: 400;
+          color: rgba(240,237,232,0.6);
+          letter-spacing: 0.3px;
+          margin-bottom: 10px;
+          opacity: 0;
+          animation: fadeUp 0.7s ease forwards 0.55s;
         }
 
-        .hero-desc{
-          color:#ccc;
-          margin-bottom:30px;
+        .hero-desc {
+          font-size: clamp(0.82rem, 1.4vw, 0.92rem);
+          color: rgba(240,237,232,0.38);
+          line-height: 1.75;
+          max-width: 500px;
+          margin: 0 auto clamp(32px, 5vw, 48px);
+          opacity: 0;
+          animation: fadeUp 0.7s ease forwards 0.7s;
         }
 
-        .hero-buttons{
-          display:flex;
-          gap:18px;
-          justify-content:center;
+        .hero-actions {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: clamp(10px, 2vw, 18px);
+          flex-wrap: wrap;
+          opacity: 0;
+          animation: fadeUp 0.7s ease forwards 0.85s;
         }
 
-        .btn-primary{
-          background:var(--lime);
-          color:#222;
-          padding:14px 28px;
-          border-radius:8px;
-          text-decoration:none;
-          font-weight:600;
-          font-size:1rem;
+        .btn-lime {
+          position: relative; overflow: hidden;
+          display: inline-flex; align-items: center; gap: 9px;
+          background: var(--lime);
+          color: #111;
+          padding: clamp(12px, 1.5vw, 14px) clamp(22px, 3vw, 30px);
+          border-radius: var(--radius);
+          font-weight: 600;
+          font-size: clamp(0.83rem, 1.3vw, 0.92rem);
+          text-decoration: none;
+          letter-spacing: 0.2px;
+          transition: transform 0.25s, box-shadow 0.25s;
+        }
+        .btn-lime::before {
+          content: '';
+          position: absolute; inset: 0;
+          background: rgba(255,255,255,0.2);
+          opacity: 0; transition: opacity 0.25s;
+        }
+        .btn-lime:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(200,244,0,0.3); }
+        .btn-lime:hover::before { opacity: 1; }
+
+        .btn-ghost {
+          display: inline-flex; align-items: center; gap: 9px;
+          border: 1px solid rgba(240,237,232,0.2);
+          color: rgba(240,237,232,0.75);
+          padding: clamp(11px, 1.4vw, 13px) clamp(22px, 3vw, 30px);
+          border-radius: var(--radius);
+          font-size: clamp(0.83rem, 1.3vw, 0.92rem);
+          text-decoration: none;
+          letter-spacing: 0.2px;
+          transition: border-color 0.25s, color 0.25s, background 0.25s;
+        }
+        .btn-ghost:hover { border-color: rgba(200,244,0,0.45); color: var(--light); background: rgba(200,244,0,0.05); }
+
+        /* Scroll hint */
+        .hero-scroll {
+          position: absolute;
+          bottom: clamp(24px, 4vw, 36px);
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 3;
+          display: flex; flex-direction: column; align-items: center; gap: 7px;
+          opacity: 0;
+          animation: fadeIn 1s ease forwards 1.4s;
+        }
+        .scroll-mouse {
+          width: 22px; height: 34px;
+          border: 1.5px solid rgba(240,237,232,0.22);
+          border-radius: 12px;
+          display: flex; justify-content: center;
+          padding-top: 6px;
+        }
+        .scroll-mouse span {
+          width: 2px; height: 6px;
+          background: var(--lime);
+          border-radius: 2px;
+          animation: scrollDot 1.9s ease infinite;
+        }
+        .scroll-label {
+          font-size: 0.58rem;
+          letter-spacing: 2.5px;
+          color: rgba(240,237,232,0.28);
+          text-transform: uppercase;
         }
 
-        .btn-secondary{
-          border:1px solid #aaa;
-          padding:12px 28px;
-          border-radius:8px;
-          text-decoration:none;
-          color:#eee;
+        @keyframes fadeUp {
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+          to { opacity: 1; }
+        }
+        @keyframes scrollDot {
+          0%  { transform: translateY(0); opacity: 1; }
+          60% { transform: translateY(10px); opacity: 0; }
+          61% { transform: translateY(0); opacity: 0; }
+          100%{ opacity: 1; }
+        }
+
+        @media (max-width: 480px) {
+          .hero-actions { flex-direction: column; align-items: stretch; }
+          .btn-lime, .btn-ghost { justify-content: center; }
+          .hero-scroll { display: none; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            transition-duration: 0.01ms !important;
+          }
         }
       `}</style>
 
-      {/* NAVBAR */}
-      <nav
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: "70px",
-          display: "flex",
-          alignItems: "center",
-          zIndex: 10,
-          background: scrolled ? "rgba(34,33,32,0.85)" : "transparent",
-          backdropFilter: scrolled ? "blur(14px)" : "none",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "1200px",
-            margin: "0 auto",
-            width: "100%",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <a href="/">
-            <img
-              src="/logoImage.png"
-              alt="S&D Media"
-              style={{ height: "80px" }}
-            />
+      {/* Mobile overlay */}
+      <div className={`mob-overlay ${mobileMenuOpen ? "open" : ""}`} onClick={() => setMobileMenuOpen(false)} />
+
+      {/* Mobile drawer */}
+      <div className={`mob-drawer ${mobileMenuOpen ? "open" : ""}`}>
+        <div className="mob-drawer-header">
+          <a href="/" className="nav-logo" onClick={() => setMobileMenuOpen(false)}>
+            <img src="/logoImage.png" alt="S&D Media" />
+          </a>
+          <button className="hamburger open" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu">
+            <span /><span /><span />
+          </button>
+        </div>
+
+        <nav className="mob-drawer-body">
+          {navLinks.map(({ label, href, type }) =>
+            type === "router" ? (
+              <Link key={label} to={href} className="mob-nav-link" onClick={() => setMobileMenuOpen(false)}>
+                {label}<span className="mob-nav-arrow">›</span>
+              </Link>
+            ) : (
+              <a key={label} href={href} className="mob-nav-link" onClick={() => setMobileMenuOpen(false)}>
+                {label}<span className="mob-nav-arrow">›</span>
+              </a>
+            )
+          )}
+        </nav>
+
+        <div className="mob-drawer-footer">
+          <a href="#pricing" className="mob-cta" onClick={() => setMobileMenuOpen(false)}>
+            Start a Project →
+          </a>
+        </div>
+      </div>
+
+      {/* Navbar */}
+      <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
+        <div className="navbar-inner">
+          <a href="/" className="nav-logo">
+            <img src="/logoImage.png" alt="S&D Media" />
           </a>
 
-          <div style={{ display: "flex", gap: "2rem", alignItems: "center" }}>
-            <a href="#home">Home</a>
-            <a href="#portfolio">Portfolio</a>
-            <a href="#pricing">Pricing</a>
-            <Link to="/team">Our Team</Link>
-            <a
-              href="#pricing"
-              style={{
-                background: "#CDFF00",
-                padding: "8px 20px",
-                borderRadius: "6px",
-                textDecoration: "none",
-                color: "#222",
-              }}
-            >
-              Start a Project
-            </a>
-          </div>
+          <ul className="nav-links-desktop">
+            {navLinks.map(({ label, href, type }) => (
+              <li key={label}>
+                {type === "router"
+                  ? <Link to={href}>{label}</Link>
+                  : <a href={href}>{label}</a>}
+              </li>
+            ))}
+            <li><a href="#pricing" className="nav-cta">Start a Project</a></li>
+          </ul>
+
+          <button
+            className={`hamburger ${mobileMenuOpen ? "open" : ""}`}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileMenuOpen}
+          >
+            <span /><span /><span />
+          </button>
         </div>
       </nav>
 
-      {/* HERO */}
+      {/* Hero */}
       <section ref={sectionRef} id="home" className="hero">
-        <div className="hero-video-wrap">
+        <div className="hero-bg">
           {!loading && (
-            <video
-              key={videoSrc}
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-              poster={posterSrc}
-            >
+            <video key={videoSrc} autoPlay muted loop playsInline preload="metadata" poster={posterSrc}>
               <source src={videoSrc} type="video/mp4" />
             </video>
           )}
         </div>
+        <div className="hero-gradient" />
+        <div className="hero-vignette" />
 
-        <div className="hero-overlay"></div>
-
-        <div className={`hero-center ${visible ? "visible" : ""}`}>
-          <span className="hero-script">WEDDING VIDEO EDITING</span>
-
-          <h1 className="hero-title">{heading}</h1>
+        <div className="hero-content">
+          <span className="hero-eyebrow">Wedding Video Editing</span>
+          <h1 className="hero-title">
+            {heading.includes("Move") ? <>Wedding Films That <em>Move</em>{"\n"}People.</> : heading}
+          </h1>
+          <div className="hero-rule" />
           <p className="hero-subtitle">{subtitle}</p>
-
           <p className="hero-desc">
             Professional post-production for wedding videographers who refuse
             to compromise on quality or deadlines.
           </p>
-
-          <div className="hero-buttons">
-            <a href="#pricing" className="btn-primary">
-              Pricing
-            </a>
-            <a href="#portfolio" className="btn-secondary">
-              Portfolio
-            </a>
+          <div className="hero-actions">
+            <a href="#pricing" className="btn-lime">View Pricing →</a>
+            <a href="#portfolio" className="btn-ghost">Watch Portfolio</a>
           </div>
+        </div>
+
+        <div className="hero-scroll">
+          <div className="scroll-mouse"><span /></div>
+          <span className="scroll-label">Scroll</span>
         </div>
       </section>
     </>
