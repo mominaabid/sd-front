@@ -354,14 +354,14 @@ useEffect(() => {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
                 <input
-  ref={nameInputRef}
-  type="text"
-  required
-  value={formData.name}
-  onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
-  className="w-full px-5 py-3.5 bg-[#2E2C3A] border border-[#4A4845] rounded-xl text-[#F3F3F2] placeholder-[#8A8885] focus:border-[#CDFF00] focus:ring-2 focus:ring-[#CDFF00]/30 outline-none transition-all"
-  placeholder="Your full name"
-/>
+                  required
+                  placeholder="Full Name"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData((p) => ({ ...p, name: e.target.value }))
+                  }
+                  className="w-full px-4 py-3 rounded-lg bg-[#2E2C3A] text-white"
+                />
 
                 <input
                   placeholder="Company Name"
