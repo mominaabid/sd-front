@@ -1,5 +1,6 @@
-import { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+
 import { Navigation } from './sections/Navigation';
 import { Hero } from './sections/Hero';
 import { TrustedBy } from './sections/TrustedBy';
@@ -16,8 +17,8 @@ import { ScrollToTop } from './components/ScrollToTop';
 import { WhatsAppWidget } from './components/WhatsAppWidget';
 import { TeamPage } from './pages/TeamPage';
 
-// ✅ Scroll to hash after page content is ready
-function ScrollToHash() {
+// ✅ Correctly typed ScrollToHash component
+const ScrollToHash: React.FC = () => {
   const location = useLocation();
 
   useEffect(() => {
@@ -28,19 +29,29 @@ function ScrollToHash() {
 
     const id = location.hash.replace('#', '');
 
-    // Delay scroll to ensure DOM is rendered
-    const timeout = setTimeout(() => {
+    const attemptScroll = () => {
       const el = document.getElementById(id);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return true;
       }
-    }, 500); // 500ms delay
+      return false;
+    };
 
-    return () => clearTimeout(timeout);
+    let attempts = 0;
+    const maxAttempts = 100;
+    const interval = setInterval(() => {
+      if (attemptScroll() || attempts > maxAttempts) {
+        clearInterval(interval);
+      }
+      attempts += 1;
+    }, 50);
+
+    return () => clearInterval(interval);
   }, [location]);
 
-  return null;
-}
+  return null; // ✅ JSX-valid
+};
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -56,6 +67,7 @@ function App() {
       <div className={`min-h-screen bg-[#222120] ${isLoading ? 'overflow-hidden max-h-screen' : ''}`}>
         <Navigation />
 
+        {/* Handle scrolling to hash */}
         <ScrollToHash />
 
         <Routes>
