@@ -3,7 +3,7 @@ import { Check, X } from 'lucide-react';
 import { API_BASE_URL } from '../constants/urls'; // your correct import
 
 interface VideoType {
-  id: string;
+  id: number;
   name: string;
   price: number;
 }
@@ -64,54 +64,52 @@ export default function Pricing() {
 
   // Calculate total price for selected video types
   const calculateTotal = () => {
-  return formData.videoTypes.reduce((total, videoId) => {
-    const video = videoTypesList.find((v) => v.id.toString() === videoId); // convert id to string
-    return total + (video?.price || 0);
-  }, 0);
-};
+    return formData.videoTypes.reduce((total, videoId) => {
+      const video = videoTypesList.find((v) => v.id.toString() === videoId);
+      return total + (video?.price || 0);
+    }, 0);
+  };
 
   // Submit inquiry
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
+    if (!selectedPlan) return;
 
-  if (!selectedPlan) return;
+    const payload: any = {
+      name: formData.personalName,
+      company_name: formData.companyName,
+      phone: formData.phone,
+      email: formData.email,
+      selected_plan: selectedPlan.card_type,
+      date: new Date().toISOString(),
+    };
 
-  // Map selected video IDs to names
-  const selectedVideoNames = formData.videoTypes
-    .map((id) => videoTypesList.find((v) => v.id === id)?.name)
-    .filter(Boolean); // remove undefined
-
-  const payload = {
-    name: formData.personalName,
-    company: formData.companyName,
-    phone: formData.phone,
-    email: formData.email,
-    selected_plan: selectedPlan.card_type, // e.g., "custom", "bundle", "dedicated"
-    video_types: selectedVideoNames,
-    date: new Date().toISOString(),
-  };
-
-  console.log('Sending payload:', payload);
-
-  try {
-    const res = await fetch(`${API_BASE_URL}leads/submit/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-
-    const result = await res.json();
-    console.log('Backend response:', result);
-
-    if (res.ok) {
-      setIsSubmitted(true);
-    } else {
-      console.error('Submit failed:', result);
+    // Add video_type_ids only for "custom"
+    if (selectedPlan.card_type === 'custom') {
+      payload.video_type_ids = formData.videoTypes.map((id) => parseInt(id, 10));
     }
-  } catch (err) {
-    console.error('Submit failed:', err);
-  }
-};
+
+    console.log('Sending payload:', payload);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}leads/submit/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await res.json();
+      console.log('Backend response:', result);
+
+      if (res.ok) {
+        setIsSubmitted(true);
+      } else {
+        console.error('Submit failed:', result);
+      }
+    } catch (err) {
+      console.error('Submit failed:', err);
+    }
+  };
 
   const closeModal = () => {
     setSelectedPlan(null);
@@ -162,105 +160,104 @@ export default function Pricing() {
       </section>
 
       {/* Modal */}
-      {/* Modal */}
-{selectedPlan && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#222120]/90" onClick={closeModal}>
-    <div
-      className="bg-[#363432] p-6 md:p-8 rounded-3xl max-w-lg w-full shadow-lg border border-border/50"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <button onClick={closeModal} className="absolute top-4 right-4 text-[#DADADA] hover:text-primary transition-colors">
-        <X className="w-5 h-5" />
-      </button>
-
-      {isSubmitted ? (
-        <div className="text-center py-8">
-          <Check className="w-10 h-10 mx-auto text-primary mb-4" />
-          <h3 className="text-2xl text-[#F3F3F2] mb-2 font-semibold">Thank You!</h3>
-          <p className="text-[#DADADA] mb-4">We've received your inquiry. Our team will contact you shortly.</p>
-          <button
-            onClick={closeModal}
-            className="px-6 py-2 bg-primary text-[#222120] rounded-lg font-medium hover:bg-primary/90 transition-colors"
+      {selectedPlan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#222120]/90" onClick={closeModal}>
+          <div
+            className="bg-[#363432] p-6 md:p-8 rounded-3xl max-w-lg w-full shadow-lg border border-border/50"
+            onClick={(e) => e.stopPropagation()}
           >
-            Close
-          </button>
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <h3 className="text-2xl font-bold text-[#F3F3F2]">{selectedPlan.heading}</h3>
-          <p className="text-sm text-muted-foreground mb-4">{selectedPlan.subheading}</p>
+            <button onClick={closeModal} className="absolute top-4 right-4 text-[#DADADA] hover:text-primary transition-colors">
+              <X className="w-5 h-5" />
+            </button>
 
-          {/* Video Types for Custom Order */}
-          {selectedPlan.card_type === 'custom' && videoTypesList.length > 0 && (
-            <div className="mb-4">
-              <label className="block text-[#F3F3F2] font-medium mb-2">Select Video Types</label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {videoTypesList.map((video) => (
-                  <label
-                    key={video.id}
-                    className="flex justify-between items-center p-3 bg-[#4A4845] rounded-lg cursor-pointer hover:bg-[#5A5753] transition-colors"
-                  >
-                    <span className="text-[#F3F3F2] font-medium">{video.name}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-primary font-semibold">${video.price}</span>
-                      <input
-  type="checkbox"
-  checked={formData.videoTypes.includes(video.id.toString())}
-  onChange={() => handleVideoTypeToggle(video.id.toString())}
-/>
-                    </div>
-                  </label>
-                ))}
+            {isSubmitted ? (
+              <div className="text-center py-8">
+                <Check className="w-10 h-10 mx-auto text-primary mb-4" />
+                <h3 className="text-2xl text-[#F3F3F2] mb-2 font-semibold">Thank You!</h3>
+                <p className="text-[#DADADA] mb-4">We've received your inquiry. Our team will contact you shortly.</p>
+                <button
+                  onClick={closeModal}
+                  className="px-6 py-2 bg-primary text-[#222120] rounded-lg font-medium hover:bg-primary/90 transition-colors"
+                >
+                  Close
+                </button>
               </div>
-              <p className="mt-2 text-sm font-medium text-[#CDFF00]">Total Estimate: ${calculateTotal()}</p>
-            </div>
-          )}
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <h3 className="text-2xl font-bold text-[#F3F3F2]">{selectedPlan.heading}</h3>
+                <p className="text-sm text-muted-foreground mb-4">{selectedPlan.subheading}</p>
 
-          <div className="space-y-3">
-            <input
-              type="text"
-              placeholder="Personal Name *"
-              required
-              value={formData.personalName}
-              onChange={(e) => setFormData({ ...formData, personalName: e.target.value })}
-              className="w-full p-3 rounded-xl bg-[#4A4845] text-[#F3F3F2] placeholder:text-[#DADADA] focus:outline-none focus:ring-2 focus:ring-primary transition"
-            />
-            <input
-              type="text"
-              placeholder="Company Name"
-              value={formData.companyName}
-              onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-              className="w-full p-3 rounded-xl bg-[#4A4845] text-[#F3F3F2] placeholder:text-[#DADADA] focus:outline-none focus:ring-2 focus:ring-primary transition"
-            />
-            <input
-              type="tel"
-              placeholder="Phone *"
-              required
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full p-3 rounded-xl bg-[#4A4845] text-[#F3F3F2] placeholder:text-[#DADADA] focus:outline-none focus:ring-2 focus:ring-primary transition"
-            />
-            <input
-              type="email"
-              placeholder="Email *"
-              required
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full p-3 rounded-xl bg-[#4A4845] text-[#F3F3F2] placeholder:text-[#DADADA] focus:outline-none focus:ring-2 focus:ring-primary transition"
-            />
+                {/* Video Types for Custom Order */}
+                {selectedPlan.card_type === 'custom' && videoTypesList.length > 0 && (
+                  <div className="mb-4">
+                    <label className="block text-[#F3F3F2] font-medium mb-2">Select Video Types</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {videoTypesList.map((video) => (
+                        <label
+                          key={video.id}
+                          className="flex justify-between items-center p-3 bg-[#4A4845] rounded-lg cursor-pointer hover:bg-[#5A5753] transition-colors"
+                        >
+                          <span className="text-[#F3F3F2] font-medium">{video.name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-primary font-semibold">${video.price}</span>
+                            <input
+                              type="checkbox"
+                              checked={formData.videoTypes.includes(video.id.toString())}
+                              onChange={() => handleVideoTypeToggle(video.id.toString())}
+                            />
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                    <p className="mt-2 text-sm font-medium text-[#CDFF00]">Total Estimate: ${calculateTotal()}</p>
+                  </div>
+                )}
+
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder="Personal Name *"
+                    required
+                    value={formData.personalName}
+                    onChange={(e) => setFormData({ ...formData, personalName: e.target.value })}
+                    className="w-full p-3 rounded-xl bg-[#4A4845] text-[#F3F3F2] placeholder:text-[#DADADA] focus:outline-none focus:ring-2 focus:ring-primary transition"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Company Name"
+                    value={formData.companyName}
+                    onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                    className="w-full p-3 rounded-xl bg-[#4A4845] text-[#F3F3F2] placeholder:text-[#DADADA] focus:outline-none focus:ring-2 focus:ring-primary transition"
+                  />
+                  <input
+                    type="tel"
+                    placeholder="Phone *"
+                    required
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full p-3 rounded-xl bg-[#4A4845] text-[#F3F3F2] placeholder:text-[#DADADA] focus:outline-none focus:ring-2 focus:ring-primary transition"
+                  />
+                  <input
+                    type="email"
+                    placeholder="Email *"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full p-3 rounded-xl bg-[#4A4845] text-[#F3F3F2] placeholder:text-[#DADADA] focus:outline-none focus:ring-2 focus:ring-primary transition"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3 bg-primary text-[#222120] rounded-xl font-semibold hover:bg-primary/90 transition-colors"
+                >
+                  Submit Inquiry
+                </button>
+              </form>
+            )}
           </div>
-
-          <button
-            type="submit"
-            className="w-full py-3 bg-primary text-[#222120] rounded-xl font-semibold hover:bg-primary/90 transition-colors"
-          >
-            Submit Inquiry
-          </button>
-        </form>
+        </div>
       )}
-    </div>
-  </div>
-)}
     </>
   );
 }
