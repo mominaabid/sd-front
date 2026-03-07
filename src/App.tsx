@@ -7,7 +7,7 @@ import { WineShowcase } from './sections/WineShowcase';
 import { Museum } from './sections/Museum';
 import { Portfolio } from './sections/Portfolio';
 import { VideoTestimonials } from './sections/VideoTestimonials';
-import { Pricing } from './sections/Pricing';
+import Pricing from './sections/Pricing';
 import { TextReviews } from './sections/TextReviews';
 import { CombinedFooter } from './sections/CombinedFooter';     // contact + rich footer
 import { Footer } from './sections/Footer';                     // simple footer
