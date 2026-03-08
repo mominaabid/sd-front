@@ -128,6 +128,11 @@ export default function Pricing() {
           display: flex;
           flex-direction: column;
           height: 100%;
+          transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .pc-card:hover {
+          border-color: #CDFF00 !important;
+          box-shadow: 0 0 0 1px #CDFF00, 0 0 18px 2px rgba(205, 255, 0, 0.2);
         }
         .pc-card-body {
           flex: 1;
