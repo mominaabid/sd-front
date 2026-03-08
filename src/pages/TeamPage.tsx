@@ -69,6 +69,13 @@ export function TeamPage() {
     { label: 'Our Team',  href: '/team',        type: 'router' },
   ];
 
+  // ── Scroll to top instantly on mount (before first paint)
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, []);
+
   // ── Fetch team
   useEffect(() => {
     (async () => {
