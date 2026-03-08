@@ -320,13 +320,13 @@ export function Hero({ isReady = true }: HeroProps) {
         }
 
         .hero-content {
-          position: relative;
-          z-index: 3;
-          text-align: center;
-          padding: clamp(100px, 14vw, 140px) clamp(20px, 5vw, 48px) clamp(80px, 10vw, 100px);
-          max-width: 960px;
-          width: 100%;
-        }
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  padding: clamp(60px, 10vw, 90px) clamp(16px, 4vw, 32px) clamp(50px, 8vw, 70px);
+  max-width: 960px;
+  width: 100%;
+}
 
         .hero-eyebrow {
           display: inline-flex;
@@ -349,8 +349,8 @@ export function Hero({ isReady = true }: HeroProps) {
 
         .hero-title {
           font-family: 'Cormorant Garamond', Georgia, serif;
-          font-size: clamp(3.2rem, 8vw, 6.4rem);
-          font-weight: 300;
+          font-size: clamp(2.4rem, 6vw, 4.8rem);
+          font-weight: 100;
           line-height: 1.04;
           letter-spacing: -0.5px;
           white-space: pre-line;
@@ -575,7 +575,7 @@ export function Hero({ isReady = true }: HeroProps) {
         <div className="hero-content">
           <span className="hero-eyebrow">Wedding Video Editing</span>
           <h1 className="hero-title">
-            {heading.includes("Move") ? <>Wedding Films That <em>Move</em>{"\n"}People.</> : heading}
+            {heading.includes("Move") ? <>Wedding Films That{"\n"} Move People.</> : heading}
           </h1>
           <div className="hero-rule" />
           <p className="hero-subtitle">{subtitle}</p>
@@ -589,10 +589,10 @@ export function Hero({ isReady = true }: HeroProps) {
           </div>
         </div>
 
-        <div className="hero-scroll">
+        {/* <div className="hero-scroll">
           <div className="scroll-mouse"><span /></div>
           <span className="scroll-label">Scroll</span>
-        </div>
+        </div> */}
       </section>
     </>
   );

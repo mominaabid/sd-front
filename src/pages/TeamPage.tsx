@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Linkedin, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { API_BASE_URL } from '../constants/urls';
@@ -51,10 +51,10 @@ export function TeamPage() {
 
   // Lightbox state — supports both image AND next/prev navigation
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const lightboxItems = [
+  const lightboxItems = useMemo(() => [
     ...teamMembers.map(m => ({ src: m.picture, type: 'image' as const, label: m.name })),
     ...btsMedia.map(b => ({ src: b.media_url, type: b.type, label: b.title })),
-  ];
+  ], [teamMembers, btsMedia]);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -63,11 +63,12 @@ export function TeamPage() {
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
 
   const navLinks = [
-  { label: 'Home', href: '/#home', type: 'anchor' },
-  { label: 'Portfolio', href: '/#portfolio', type: 'anchor' },
-  { label: 'Pricing', href: '/#pricing', type: 'anchor' },
-  { label: 'Our Team', href: '/team', type: 'router' },
-];
+    { label: 'Home',      href: '/#home',      type: 'anchor' },
+    { label: 'Portfolio', href: '/#portfolio',  type: 'anchor' },
+    { label: 'Pricing',   href: '/#pricing',    type: 'anchor' },
+    { label: 'Our Team',  href: '/team',        type: 'router' },
+  ];
+
   // ── Fetch team
   useEffect(() => {
     (async () => {
@@ -84,26 +85,6 @@ export function TeamPage() {
     })();
   }, []);
 
-  useEffect(() => {
-  window.scrollTo(0, 0);
-}, []);
-
-useEffect(() => {
-  if (window.location.hash) {
-    const id = window.location.hash.replace('#', '');
-
-    setTimeout(() => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
-      }
-    }, 100);
-  }
-}, []);
-
   // ── Fetch BTS
   useEffect(() => {
     (async () => {
@@ -112,7 +93,27 @@ useEffect(() => {
         const res  = await fetch(`${API_BASE_URL}behind-the-scenes/`);
         if (!res.ok) throw new Error();
         const json = await res.json();
-        setBtsMedia(json.data || []);
+
+        const raw: Record<string, unknown>[] = json.data || json.results || [];
+
+        const normalized: BTSMedia[] = raw.map((item) => {
+          // Backend sends media_type: "photo" or "video"
+          const isVideo = (item.media_type as string) === 'video';
+
+          // Use photo URL for images, video_file for videos
+          const resolvedUrl = isVideo
+            ? (item.video_file as string) || ''
+            : (item.photo as string) || '';
+
+          return {
+            id:        item.id as number,
+            title:     item.title as string || '',
+            media_url: resolvedUrl,
+            type:      isVideo ? 'video' : 'image',
+          };
+        });
+
+        setBtsMedia(normalized);
       } catch {
         setErrorBTS('Could not load behind-the-scenes media.');
         setBtsMedia([]);
@@ -680,99 +681,62 @@ useEffect(() => {
       `}</style>
 
       {/* ─── Mobile overlay ─── */}
-<div
-  className={`tp-overlay ${mobileMenuOpen ? 'open' : ''}`}
-  onClick={() => setMobileMenuOpen(false)}
-/>
+      <div className={`tp-overlay ${mobileMenuOpen ? 'open' : ''}`} onClick={() => setMobileMenuOpen(false)} />
 
-{/* ─── Mobile drawer ─── */}
-<div className={`tp-drawer ${mobileMenuOpen ? 'open' : ''}`}>
-  <div className="tp-drawer-hdr">
-    <Link to="/" className="tp-logo" onClick={() => setMobileMenuOpen(false)}>
-      <img src="/logoImage.png" alt="S&D Media" />
-    </Link>
+      {/* ─── Mobile drawer ─── */}
+      <div className={`tp-drawer ${mobileMenuOpen ? 'open' : ''}`}>
+        <div className="tp-drawer-hdr">
+          <a href="/" className="tp-logo" onClick={() => setMobileMenuOpen(false)}>
+            <img src="/logoImage.png" alt="S&D Media" />
+          </a>
+          <button className="tp-ham open" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu">
+            <span /><span /><span />
+          </button>
+        </div>
+        <nav className="tp-drawer-body">
+          {navLinks.map(({ label, href, type }) =>
+            type === 'router' ? (
+              <Link key={label} to={href} className="tp-mob-link" onClick={() => setMobileMenuOpen(false)}>
+                {label}<span className="tp-mob-arr">›</span>
+              </Link>
+            ) : (
+              <a key={label} href={href} className="tp-mob-link" onClick={() => setMobileMenuOpen(false)}>
+                {label}<span className="tp-mob-arr">›</span>
+              </a>
+            )
+          )}
+        </nav>
+        <div className="tp-drawer-ftr">
+          <a href="/#pricing" className="tp-mob-cta" onClick={() => setMobileMenuOpen(false)}>
+            Start a Project →
+          </a>
+        </div>
+      </div>
 
-    <button
-      className={`tp-ham ${mobileMenuOpen ? 'open' : ''}`}
-      onClick={() => setMobileMenuOpen(false)}
-      aria-label="Close menu"
-    >
-      <span />
-      <span />
-      <span />
-    </button>
-  </div>
-  <nav className="tp-drawer-body">
-  {navLinks.map(({ label, href, type }) =>
-    type === 'router' ? (
-      <Link
-        key={label}
-        to={href}
-        className="tp-mob-link"
-        onClick={() => setMobileMenuOpen(false)}
-      >
-        {label} <span className="tp-mob-arr">›</span>
-      </Link>
-    ) : (
-      <a
-        key={label}
-        href={href}
-        className="tp-mob-link"
-        onClick={() => setMobileMenuOpen(false)}
-      >
-        {label} <span className="tp-mob-arr">›</span>
-      </a>
-    )
-  )}
-</nav>
-  <div className="tp-drawer-ftr">
-    <a
-      href="/#pricing"
-      className="tp-mob-cta"
-      onClick={() => setMobileMenuOpen(false)}
-    >
-      Start a Project →
-    </a>
-  </div>
-</div>
-
-{/* ─── Navbar ─── */}
-<nav className="tp-nav">
-  <div className="tp-nav-inner">
-    <Link to="/" className="tp-logo">
-      <img src="/logoImage.png" alt="S&D Media" />
-    </Link>
-
-    {/* Desktop / tablet links */}
-    <ul className="tp-nav-links">
-  {navLinks.map(({ label, href, type }) => (
-    <li key={label}>
-      {type === 'router'
-        ? <Link to={href}>{label}</Link>
-        : <a href={href}>{label}</a>}
-    </li>
-  ))}
-
-  <li>
-    <a href="/#pricing" className="tp-nav-cta">
-      Start a Project
-    </a>
-  </li>
-</ul>
-
-    {/* Hamburger for mobile */}
-    <button
-      className={`tp-ham ${mobileMenuOpen ? 'open' : ''}`}
-      onClick={() => setMobileMenuOpen((v) => !v)}
-      aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-      aria-expanded={mobileMenuOpen}
-    >
-      <span />
-      <span />
-      <span />
-    </button>
-  </div>
-</nav>
+      {/* ─── Navbar ─── */}
+      <nav className="tp-nav">
+        <div className="tp-nav-inner">
+          <a href="/" className="tp-logo">
+            <img src="/logoImage.png" alt="S&D Media" />
+          </a>
+          <ul className="tp-nav-links">
+            {navLinks.map(({ label, href, type }) => (
+              <li key={label}>
+                {type === 'router' ? <Link to={href}>{label}</Link> : <a href={href}>{label}</a>}
+              </li>
+            ))}
+            <li><a href="/#pricing" className="tp-nav-cta">Start a Project</a></li>
+          </ul>
+          <button
+            className={`tp-ham ${mobileMenuOpen ? 'open' : ''}`}
+            onClick={() => setMobileMenuOpen(v => !v)}
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileMenuOpen}
+          >
+            <span /><span /><span />
+          </button>
+        </div>
+      </nav>
 
       {/* ─── Page Header ─── */}
       <div className="tp-header">
@@ -853,8 +817,9 @@ useEffect(() => {
             <div className="tp-state">No behind-the-scenes content yet.</div>
           ) : (
             <div className="tp-bts-grid">
-              {btsMedia.map((item) => {
-                const lbIdx = lightboxItems.findIndex(x => x.src === item.media_url);
+              {btsMedia.map((item, btsIdx) => {
+                // BTS items sit after all team members in lightboxItems
+                const lbIdx = teamMembers.length + btsIdx;
                 return (
                   <div
                     key={item.id}
@@ -930,6 +895,7 @@ useEffect(() => {
 
           {lightboxItems[lightboxIndex].type === 'image' ? (
             <img
+              key={lightboxItems[lightboxIndex].src}
               src={lightboxItems[lightboxIndex].src}
               alt={lightboxItems[lightboxIndex].label}
               className="tp-lb-media"
@@ -937,10 +903,12 @@ useEffect(() => {
             />
           ) : (
             <video
+              key={lightboxItems[lightboxIndex].src}
               src={lightboxItems[lightboxIndex].src}
               className="tp-lb-media"
               controls
               autoPlay
+              playsInline
               onClick={e => e.stopPropagation()}
             />
           )}

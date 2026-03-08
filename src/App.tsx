@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { useState, useCallback } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import { Navigation } from './sections/Navigation';
 import { Hero } from './sections/Hero';
@@ -17,42 +17,6 @@ import { ScrollToTop } from './components/ScrollToTop';
 import { WhatsAppWidget } from './components/WhatsAppWidget';
 import { TeamPage } from './pages/TeamPage';
 
-// ✅ Correctly typed ScrollToHash component
-const ScrollToHash: React.FC = () => {
-  const location = useLocation();
-
-  useEffect(() => {
-    if (!location.hash) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
-    }
-
-    const id = location.hash.replace('#', '');
-
-    const attemptScroll = () => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        return true;
-      }
-      return false;
-    };
-
-    let attempts = 0;
-    const maxAttempts = 100;
-    const interval = setInterval(() => {
-      if (attemptScroll() || attempts > maxAttempts) {
-        clearInterval(interval);
-      }
-      attempts += 1;
-    }, 50);
-
-    return () => clearInterval(interval);
-  }, [location]);
-
-  return null; // ✅ JSX-valid
-};
-
 function App() {
   const [isLoading, setIsLoading] = useState(true);
 
@@ -66,9 +30,6 @@ function App() {
 
       <div className={`min-h-screen bg-[#222120] ${isLoading ? 'overflow-hidden max-h-screen' : ''}`}>
         <Navigation />
-
-        {/* Handle scrolling to hash */}
-        <ScrollToHash />
 
         <Routes>
           {/* Home Page */}
@@ -95,6 +56,7 @@ function App() {
             }
           />
 
+         
           {/* Team Page */}
           <Route
             path="/team"

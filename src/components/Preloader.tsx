@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Film } from 'lucide-react';
 import { preloaderConfig } from '../config';
 
 export function Preloader({ onComplete }: { onComplete: () => void }) {
@@ -11,12 +10,12 @@ export function Preloader({ onComplete }: { onComplete: () => void }) {
     return null;
   }
 
-  // Phase handles overall fade-out
   const [phase, setPhase] = useState<'loading' | 'fading'>('loading');
 
   useEffect(() => {
-    const fadeTimer = setTimeout(() => setPhase('fading'), 2200); // overall fade start
-    const completeTimer = setTimeout(() => onComplete(), 2800); // remove preloader
+    const fadeTimer = setTimeout(() => setPhase('fading'), 2200);
+    const completeTimer = setTimeout(() => onComplete(), 2800);
+
     return () => {
       clearTimeout(fadeTimer);
       clearTimeout(completeTimer);
@@ -29,17 +28,20 @@ export function Preloader({ onComplete }: { onComplete: () => void }) {
         phase === 'fading' ? 'opacity-0' : 'opacity-100'
       }`}
     >
-      {/* Logo Icon */}
+      {/* Logo Image */}
       <div
         className="preloader-text mb-6 opacity-0 animate-fade-in-up"
         style={{ animationDelay: '0.0s', animationFillMode: 'forwards' }}
       >
-        <Film className="w-12 h-12 text-[#CDFF00] transform scale-0 animate-pop-in" />
+        <img
+          src="/logoImage.png"
+          alt="S&D Media"
+          className="h-16 md:h-20 w-auto transform scale-0 animate-pop-in"
+        />
       </div>
 
       {/* Brand Name + Tagline */}
       <div className="preloader-text text-center">
-        {/* Brand Name */}
         <h1
           className="font-serif text-3xl md:text-4xl tracking-wide mb-2 opacity-0 animate-fade-in-up"
           style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}
@@ -50,7 +52,6 @@ export function Preloader({ onComplete }: { onComplete: () => void }) {
           )}
         </h1>
 
-        {/* Tagline */}
         {preloaderConfig.tagline && (
           <p
             className="text-[#CDFF00]/80 text-sm md:text-base tracking-wide opacity-0 animate-fade-in-up"
@@ -62,8 +63,10 @@ export function Preloader({ onComplete }: { onComplete: () => void }) {
       </div>
 
       {/* Loading Line */}
-      <div className="mt-8 w-48 h-px bg-[#4A4845] overflow-hidden opacity-0 animate-fade-in-up" 
-           style={{ animationDelay: '0.6s', animationFillMode: 'forwards' }}>
+      <div
+        className="mt-8 w-48 h-px bg-[#4A4845] overflow-hidden opacity-0 animate-fade-in-up"
+        style={{ animationDelay: '0.6s', animationFillMode: 'forwards' }}
+      >
         <div className="preloader-line h-full bg-gradient-to-r from-[#CDFF00]/50 via-[#CDFF00] to-[#CDFF00]/50" />
       </div>
 
@@ -80,21 +83,21 @@ export function Preloader({ onComplete }: { onComplete: () => void }) {
       {/* Animations */}
       <style>
         {`
-          /* Fade in + slight upward motion */
           @keyframes fadeInUp {
             0% { opacity: 0; transform: translateY(8px); }
             100% { opacity: 1; transform: translateY(0); }
           }
+
           .animate-fade-in-up {
             animation: fadeInUp 0.6s ease-out;
           }
 
-          /* Pop-in for icon */
           @keyframes popIn {
             0% { transform: scale(0); opacity: 0; }
             80% { transform: scale(1.2); opacity: 1; }
             100% { transform: scale(1); }
           }
+
           .animate-pop-in {
             animation: popIn 0.6s ease-out forwards;
           }

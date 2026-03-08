@@ -228,30 +228,17 @@ export function Portfolio() {
           line-height: 38px;
         }
 
-        /* ── Mobile: icon-only nav buttons ── */
+        /* Mobile adjustments */
         @media (max-width: 480px) {
-          .page-nav {
-            width: 42px;
-            height: 42px;
-            padding: 0;
-            border-radius: 10px;
-          }
+          .page-nav { width: 42px; height: 42px; padding: 0; border-radius: 10px; }
           .page-nav-label { display: none; }
-
-          .page-pill {
-            width: 34px;
-            height: 34px;
-            font-size: 0.8rem;
-            border-radius: 7px;
-          }
-
+          .page-pill { width: 34px; height: 34px; font-size: 0.8rem; border-radius: 7px; }
           .pagination { gap: 4px; margin-top: 36px; }
         }
 
-        /* ── Very small screens: tighten further ── */
         @media (max-width: 360px) {
           .page-pill { width: 30px; height: 30px; font-size: 0.75rem; }
-          .page-nav  { width: 38px; height: 38px; }
+          .page-nav { width: 38px; height: 38px; }
           .pagination { gap: 3px; }
         }
       `}</style>
@@ -305,6 +292,11 @@ export function Portfolio() {
                     style={{ transitionDelay: `${index * 100}ms` }}
                     onClick={() => setSelectedVideo(item)}
                   >
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+  <div className="w-16 h-16 rounded-full bg-[#CDFF00]/80 flex items-center justify-center shadow-lg shadow-[#CDFF00]/30 transform group-hover:scale-110 transition-transform">
+    <Play className="w-8 h-8 text-[#222120] fill-[#222120] ml-1" />
+  </div>
+</div>
                     <div className="w-full h-full overflow-hidden">
                       {item.thumbnail_url ? (
                         <img
@@ -332,12 +324,6 @@ export function Portfolio() {
 
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="w-16 h-16 rounded-full bg-[#CDFF00]/80 flex items-center justify-center shadow-lg shadow-[#CDFF00]/30 transform group-hover:scale-110 transition-transform">
-                        <Play className="w-8 h-8 text-[#222120] fill-[#222120] ml-1" />
-                      </div>
-                    </div>
-
                     <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/90 to-transparent">
                       <p className="text-xs text-[#CDFF00] font-medium uppercase tracking-wider mb-1">
                         {categories.find((c) => c.id === item.category.id)?.name || 'Video'}
@@ -349,7 +335,7 @@ export function Portfolio() {
                 ))}
               </div>
 
-              {/* ── Pagination ── */}
+              {/* Pagination */}
               {totalPages > 1 && (
                 <nav className="pagination" aria-label="Portfolio pages">
 
@@ -364,7 +350,7 @@ export function Portfolio() {
                     <span className="page-nav-label">Previous</span>
                   </button>
 
-                  {/* Page numbers with smart ellipsis */}
+                  {/* Page numbers */}
                   {getPageRange().map((item, i) =>
                     item === '...' ? (
                       <span key={`ellipsis-${i}`} className="page-ellipsis">…</span>
@@ -399,57 +385,46 @@ export function Portfolio() {
         </div>
       </section>
 
-      {/* Video Popup */}
-      {selectedVideo && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
-          onClick={() => setSelectedVideo(null)}
-        >
-          <div
-            className="relative w-full max-w-5xl aspect-video bg-[#1a1a1a] rounded-2xl overflow-hidden shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setSelectedVideo(null)}
-              className="absolute top-4 right-4 z-10 w-12 h-12 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-[#CDFF00] hover:text-black transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
+      {/* ─────────────────────────── Video Popup ─────────────────────────── */}
+{/* Video Popup */}
+{selectedVideo && (
+  <div
+    className="fixed inset-0 z-[9999] flex items-start justify-center px-4 pt-20 pb-8 bg-black/80 backdrop-blur-sm transition-opacity duration-300"
+    onClick={() => setSelectedVideo(null)}
+  >
+    <div
+      className="relative w-full max-w-4xl rounded-2xl overflow-hidden shadow-2xl bg-[#111111] transform transition-all duration-300 scale-100 sm:scale-105"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Close Button */}
+      <button
+        onClick={() => setSelectedVideo(null)}
+        className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-[#CDFF00] hover:text-black transition-all duration-200 shadow-lg"
+      >
+        <X className="w-5 h-5" />
+      </button>
 
-            <div className="w-full h-full relative">
-              {selectedVideo.thumbnail_url ? (
-                <img
-                  src={getMediaUrl(selectedVideo.thumbnail_url) || ''}
-                  alt={selectedVideo.title}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <video
-                  src={getMediaUrl(selectedVideo.video_url || selectedVideo.video_file) || ''}
-                  className="w-full h-full object-cover"
-                  controls
-                  autoPlay
-                />
-              )}
+      {/* Video */}
+      <video
+        key={selectedVideo.id}
+        src={getMediaUrl(selectedVideo.video_url || selectedVideo.video_file) || ''}
+        className="w-full h-auto max-h-[70vh] object-contain bg-black"
+        controls
+        autoPlay
+      />
 
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60">
-                <div className="w-24 h-24 rounded-full bg-[#CDFF00] flex items-center justify-center mb-6 cursor-pointer hover:scale-110 transition-transform shadow-xl shadow-[#CDFF00]/30">
-                  <Play className="w-12 h-12 text-black fill-black ml-2" />
-                </div>
-                <h3 className="font-display text-2xl md:text-3xl font-bold text-white mb-2">
-                  {selectedVideo.title}
-                </h3>
-                {selectedVideo.couple && (
-                  <p className="text-gray-300 text-lg">{selectedVideo.couple}</p>
-                )}
-                <p className="text-[#CDFF00] text-base mt-4 opacity-80">
-                  Video playback coming soon
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Info */}
+      <div className="p-4 text-center bg-[#1a1a1a]">
+        <h3 className="text-xl md:text-2xl font-bold text-white mb-1">
+          {selectedVideo.title}
+        </h3>
+        {selectedVideo.couple && (
+          <p className="text-gray-300 text-base md:text-lg">{selectedVideo.couple}</p>
+        )}
+      </div>
+    </div>
+  </div>
+)}
     </>
   );
 }
