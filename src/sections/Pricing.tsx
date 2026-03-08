@@ -230,14 +230,14 @@ export default function Pricing() {
           </div>
 
           {/* items-stretch so all cards are same height → buttons align */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto items-stretch pt-4">
             {cards.map((card) => (
               <div
                 key={card.id}
-                className="pc-card bg-card/50 border border-border/50 rounded-lg p-6 relative"
+                className="pc-card bg-card/50 border border-border/50 rounded-lg p-6 relative overflow-visible"
               >
                 {card.is_most_popular && (
-                  <span className="absolute -top-3 left-6 px-3 py-1 bg-primary text-xs rounded-full">
+                  <span className="absolute -top-3 left-6 px-3 py-1 bg-[#CDFF00] text-[#1a1918] text-xs font-semibold rounded-full">
                     Most Popular
                   </span>
                 )}
