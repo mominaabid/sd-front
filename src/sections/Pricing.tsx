@@ -39,7 +39,6 @@ export default function Pricing() {
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  // Fetch pricing cards and video types
   useEffect(() => {
     fetch(`${API_BASE_URL}pricing/`)
       .then((res) => res.json())
@@ -52,7 +51,6 @@ export default function Pricing() {
       .catch((err) => console.error('Error fetching video types:', err));
   }, []);
 
-  // ── Lock body scroll when modal is open ──
   useEffect(() => {
     if (selectedPlan) {
       document.body.style.overflow = 'hidden';
@@ -106,6 +104,14 @@ export default function Pricing() {
       const result = await res.json();
       if (res.ok) {
         setIsSubmitted(true);
+
+        // ── Meta Pixel: track lead with plan details ──
+        if (typeof window !== 'undefined' && (window as any).fbq) {
+          (window as any).fbq('track', 'Lead', {
+            content_name: selectedPlan.heading,
+            content_category: selectedPlan.card_type,
+          });
+        }
       } else {
         console.error('Submit failed:', result);
       }
@@ -123,7 +129,6 @@ export default function Pricing() {
   return (
     <>
       <style>{`
-        /* ── Card layout: flex column so CTA button is always bottom-aligned ── */
         .pc-card {
           display: flex;
           flex-direction: column;
@@ -142,7 +147,6 @@ export default function Pricing() {
         .pc-features { flex: 1; }
         .pc-btn-wrap { margin-top: auto; padding-top: 20px; }
 
-        /* ── Modal backdrop: fixed, no scroll ── */
         .pc-backdrop {
           position: fixed;
           inset: 0;
@@ -150,7 +154,6 @@ export default function Pricing() {
           display: flex;
           align-items: center;
           justify-content: center;
-          /* Top padding clears the fixed navbar (72px) + extra breathing room */
           padding: calc(72px + 12px) 16px 16px;
           background: rgba(22, 21, 20, 0.88);
           backdrop-filter: blur(10px);
@@ -158,12 +161,10 @@ export default function Pricing() {
           overflow: hidden;
         }
 
-        /* ── Modal box: capped height, flex column ── */
         .pc-modal {
           position: relative;
           width: 100%;
           max-width: 520px;
-          /* Height fills remaining space below the navbar */
           max-height: 100%;
           background: #363432;
           border-radius: 20px;
@@ -174,14 +175,12 @@ export default function Pricing() {
           overflow: hidden;
         }
 
-        /* ── Sticky close button row at top of modal ── */
         .pc-modal-hdr {
           position: relative;
           flex-shrink: 0;
-          padding: 20px 52px 0 28px; /* right pad leaves room for close btn */
+          padding: 20px 52px 0 28px;
         }
 
-        /* ── Close button ── */
         .pc-close {
           position: absolute;
           top: 14px;
@@ -206,7 +205,6 @@ export default function Pricing() {
           transform: rotate(90deg);
         }
 
-        /* ── Scrollable inner body ── */
         .pc-modal-body {
           flex: 1;
           overflow-y: auto;
@@ -234,7 +232,6 @@ export default function Pricing() {
             </p>
           </div>
 
-          {/* items-stretch so all cards are same height → buttons align */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto items-stretch pt-4">
             {cards.map((card) => (
               <div
@@ -265,7 +262,6 @@ export default function Pricing() {
                     )}
                   </div>
 
-                  {/* CTA always at the bottom of every card */}
                   <div className="pc-btn-wrap">
                     <button
                       onClick={() => setSelectedPlan(card)}
@@ -281,21 +277,14 @@ export default function Pricing() {
         </div>
       </section>
 
-      {/* ── Modal ── */}
       {selectedPlan && (
-        /* Clicking backdrop closes modal; backdrop itself does NOT scroll */
         <div className="pc-backdrop" onClick={closeModal}>
-
-          {/* Modal box stops propagation so inner clicks don't close it */}
           <div className="pc-modal" onClick={(e) => e.stopPropagation()}>
-
-            {/* Always-visible close button */}
             <button className="pc-close" onClick={closeModal} aria-label="Close">
               <X className="w-4 h-4" />
             </button>
 
             {isSubmitted ? (
-              /* Success state — no scroll needed */
               <div className="pc-modal-body flex flex-col items-center justify-center text-center py-10">
                 <Check className="w-10 h-10 text-primary mb-4" />
                 <h3 className="text-2xl text-[#F3F3F2] mb-2 font-semibold">Thank You!</h3>
@@ -311,7 +300,6 @@ export default function Pricing() {
               </div>
             ) : (
               <>
-                {/* Non-scrolling header with plan title */}
                 <div className="pc-modal-hdr">
                   <h3 className="text-2xl font-bold text-[#F3F3F2]">{selectedPlan.heading}</h3>
                   {selectedPlan.subheading && (
@@ -319,11 +307,8 @@ export default function Pricing() {
                   )}
                 </div>
 
-                {/* Scrollable form body */}
                 <div className="pc-modal-body">
                   <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-
-                    {/* Video Types — custom plan only */}
                     {selectedPlan.card_type === 'custom' && videoTypesList.length > 0 && (
                       <div>
                         <label className="block text-[#F3F3F2] font-medium mb-2 text-sm">
@@ -356,7 +341,6 @@ export default function Pricing() {
                       </div>
                     )}
 
-                    {/* Contact fields */}
                     <div className="space-y-3">
                       <input
                         type="text"

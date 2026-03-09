@@ -1,12 +1,20 @@
 import { useState, useEffect } from 'react';
 import { ArrowUp } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { scrollToTopConfig } from '../config';
 
 export function ScrollToTop() {
-  // Null check: if config is empty, render nothing
   if (!scrollToTopConfig.ariaLabel) return null;
 
   const [isVisible, setIsVisible] = useState(false);
+  const { pathname } = useLocation();
+
+  // ── Meta Pixel: fire PageView on every route change ──
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any).fbq) {
+      (window as any).fbq('track', 'PageView');
+    }
+  }, [pathname]);
 
   useEffect(() => {
     const handleScroll = () => {
