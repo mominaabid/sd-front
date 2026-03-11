@@ -99,7 +99,7 @@ export interface HeroConfig {
   ctaSecondaryHref: string;
   stats: HeroStat[];
   decorativeText: string;
-  videoPoster: string;
+  // videoPoster: string;
   videoSrc: string;
 }
 
@@ -119,7 +119,7 @@ export const heroConfig: HeroConfig = {
   decorativeText: "CINEMATIC · EMOTIONAL · TIMELESS",
 
   // Your local video
-  videoPoster: "/couple.jpg", // updated poster image
+  // videoPoster: "/couple.jpg", // updated poster image
   videoSrc: "/77929-564459462_tiny.mp4",
 };
 
@@ -686,7 +686,7 @@ export const footerConfig: FooterConfig = {
   newsletterSuccessText: "Thank you for subscribing!",
   newsletterErrorText: "Something went wrong. Please try again.",
   newsletterEndpoint: "https://formspree.io/f/YOUR_FORM_ID",
-  copyrightText: "© 2024 S&D Media. All rights reserved.",
+  copyrightText: "© 2026 S&D Media. All rights reserved.",
   legalLinks: ["Privacy Policy", "Terms of Service"],
   backToTopText: "Back to top",
 };
