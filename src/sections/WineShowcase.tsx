@@ -1,13 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { builtForConfig } from '../config';
-import { Clock, Sparkles, Flame, Shield } from 'lucide-react';
-
-const iconMap: Record<string, React.ElementType> = {
-  'Time Saving': Clock,
-  'Quality': Sparkles,
-  'Peak Season Burnout': Flame,
-  'Reliable Editing Partner': Shield,
-};
+import { Sparkles } from 'lucide-react'; // fallback icon
 
 export function WineShowcase() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -59,7 +52,6 @@ export function WineShowcase() {
         {/* Features Grid */}
         <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-16">
           {builtForConfig.features.map((feature, index) => {
-            const Icon = iconMap[feature.title] || Sparkles;
             const isEven = index % 2 === 0;
 
             return (
@@ -71,7 +63,15 @@ export function WineShowcase() {
                   transitionTimingFunction: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                 }}
               >
-                <Icon className="w-8 h-8 text-[#CDFF00] mb-4 group-hover:drop-shadow-[0_0_8px_rgba(205,255,0,0.5)] transition-all" />
+                {feature.logo ? (
+                  <img
+                    src={feature.logo}
+                    alt={feature.title}
+                    className="w-8 h-8 mb-4 group-hover:drop-shadow-[0_0_8px_rgba(205,255,0,0.5)] transition-all"
+                  />
+                ) : (
+                  <Sparkles className="w-8 h-8 text-[#CDFF00] mb-4 group-hover:drop-shadow-[0_0_8px_rgba(205,255,0,0.5)] transition-all" />
+                )}
 
                 <h3 className="text-xl font-primary font-semibold mb-3 text-white">
                   {feature.title}

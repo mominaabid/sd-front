@@ -157,8 +157,9 @@ export const trustedByConfig: TrustedByConfig = {
 // Built for Videographers (WineShowcase)
 // -----------------------------------------------------------------------------
 export interface FeaturePoint {
-  title: string;
+   title: string;
   description: string;
+  logo?: string; 
 }
 
 export interface BuiltForConfig {
@@ -173,10 +174,30 @@ export const builtForConfig: BuiltForConfig = {
   mainTitle: "Your Post-Production Partner",
   subtitle: "We handle editing so you can focus on getting more clients.",
   features: [
-    { title: "Time Saving", description: " Stuck in editing delays your ability to shoot more weddings and scale your business. We streamline post-production so you can focus on filming and growth." },
-    { title: "Quality", description: "Achieving cinematic quality and modern wedding styles requires focus and expertise. Since post production is our sole priority, we’re dedicated to elevating the final film beyond standard edits." },
-    { title: "Peak Season Burnout", description: "During peak season, edits often become rushed and repetitive due to workload. We ensure each wedding film remains creatively distinct and crafted like a story." },
-    { title: "Reliability", description: "Wedding footage demands trust, security, and dependable timelines. With a system refined over 3 years, we deliver consistency you can rely on especially when it matters most." },
+    {
+      title: "Time Saving",
+      description:
+        " Stuck in editing delays your ability to shoot more weddings and scale your business. We streamline post-production so you can focus on filming and growth.",
+      logo: "/Time Saving.png",
+    },
+    {
+      title: "Quality",
+      description:
+        "Achieving cinematic quality and modern wedding styles requires focus and expertise. Since post production is our sole priority, we’re dedicated to elevating the final film beyond standard edits.",
+      logo: "/Q u a l i t y.png",
+    },
+    {
+      title: "Peak Season Burnout",
+      description:
+        "During peak season, edits often become rushed and repetitive due to workload. We ensure each wedding film remains creatively distinct and crafted like a story.",
+      logo: "/Peak Season Burnout.png",
+    },
+    {
+      title: "Reliability",
+      description:
+        "Wedding footage demands trust, security, and dependable timelines. With a system refined over 3 years, we deliver consistency you can rely on especially when it matters most.",
+      logo: "/Reliable-Editing-Partner.png",
+    },
   ],
 };
 
