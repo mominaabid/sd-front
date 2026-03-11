@@ -1,6 +1,5 @@
-import { useState } from 'react';
 import { footerConfig } from '../config';
-import { Instagram, Facebook, Linkedin, Youtube, MapPin, Phone, Mail, ArrowUp, Send } from 'lucide-react';
+import { Instagram, Facebook, Linkedin, Youtube, MapPin, Phone, Mail, ArrowUp } from 'lucide-react';
 
 const socialIconMap: Record<string, React.ElementType> = {
   Instagram,
@@ -16,18 +15,6 @@ const contactIconMap: Record<string, React.ElementType> = {
 };
 
 export function Footer() {
-  const [email, setEmail] = useState('');
-  const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'success' | 'error'>('idle');
-
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email) {
-      setNewsletterStatus('success');
-      setEmail('');
-      setTimeout(() => setNewsletterStatus('idle'), 3000);
-    }
-  };
-
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -92,12 +79,12 @@ export function Footer() {
             </div>
           ))}
 
-          {/* Contact & Newsletter */}
+          {/* Contact */}
           <div>
             <h4 className="font-serif text-lg text-[#F3F3F2] mb-4">
               Contact Us
             </h4>
-            <ul className="space-y-3 mb-6">
+            <ul className="space-y-3">
               {footerConfig.contactItems.map((item, index) => {
                 const Icon = contactIconMap[item.icon];
                 return (
@@ -108,33 +95,6 @@ export function Footer() {
                 );
               })}
             </ul>
-
-            {/* Newsletter */}
-            <div>
-              <p className="text-[#F3F3F2] text-sm mb-2">
-                {footerConfig.newsletterLabel}
-              </p>
-              <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={footerConfig.newsletterPlaceholder}
-                  className="flex-1 px-3 py-2 bg-[#363432] border border-[#4A4845] rounded-lg text-[#F3F3F2] text-sm placeholder-[#8a8885] focus:border-[#CDFF00] focus:outline-none transition-colors"
-                />
-                <button
-                  type="submit"
-                  className="px-3 py-2 bg-[#CDFF00] text-[#222120] rounded-lg hover:bg-[#a8cc00] transition-colors"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
-              </form>
-              {newsletterStatus === 'success' && (
-                <p className="text-[#CDFF00] text-xs mt-2">
-                  {footerConfig.newsletterSuccessText}
-                </p>
-              )}
-            </div>
           </div>
         </div>
       </div>

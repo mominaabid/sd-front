@@ -64,14 +64,13 @@ export function Hero({ isReady = true }: HeroProps) {
       ? heroData.background_video_url
       : "/77929-564459462_tiny.mp4";
 
-  const posterSrc = "/couple.jpg";
   const heading = heroData?.heading || fallbackData.heading;
   const subtitle = heroData?.subtitle || fallbackData.subtitle;
 
   const navLinks = [
     { label: "Home", href: "#home", type: "anchor" },
-  { label: "Portfolio", href: "#portfolio", type: "anchor" },
-  { label: "Pricing", href: "#pricing", type: "anchor" },
+    { label: "Portfolio", href: "#portfolio", type: "anchor" },
+    { label: "Pricing", href: "#pricing", type: "anchor" },
     { label: "Our Team", href: "/team", type: "router" },
   ];
 
@@ -329,44 +328,44 @@ export function Hero({ isReady = true }: HeroProps) {
         }
 
         .hero-content {
-  position: relative;
-  z-index: 3;
-  text-align: center;
-  padding: clamp(60px, 10vw, 90px) clamp(16px, 4vw, 32px) clamp(50px, 8vw, 70px);
-  max-width: 960px;
-  width: 100%;
-}
+          position: relative;
+          z-index: 3;
+          text-align: center;
+          padding: clamp(60px, 10vw, 90px) clamp(16px, 4vw, 32px) clamp(50px, 8vw, 70px);
+          max-width: 960px;
+          width: 100%;
+        }
 
         .hero-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--lime);
-  font-size: clamp(0.68rem, 1.15vw, 0.76rem); /* slightly bigger */
-  font-weight: 500;
-  letter-spacing: 3.5px;
-  text-transform: uppercase;
-  opacity: 0;
-  transform: translateY(10px);
-  animation: fadeUp 0.7s ease forwards 0.1s;
-}
+          display: inline-flex;
+          align-items: center;
+          gap: 12px;
+          color: var(--lime);
+          font-size: clamp(0.68rem, 1.15vw, 0.76rem);
+          font-weight: 500;
+          letter-spacing: 3.5px;
+          text-transform: uppercase;
+          opacity: 0;
+          transform: translateY(10px);
+          animation: fadeUp 0.7s ease forwards 0.1s;
+        }
 
-.hero-eyebrow::before,
-.hero-eyebrow::after {
-  content: '';
-  display: block;
-  width: 28px;
-  height: 1px;
-  background: var(--lime);
-  opacity: 0.55;
-}
+        .hero-eyebrow::before,
+        .hero-eyebrow::after {
+          content: '';
+          display: block;
+          width: 28px;
+          height: 1px;
+          background: var(--lime);
+          opacity: 0.55;
+        }
 
         .hero-title {
-        font-family:'Auriga', serif;
-  font-size: clamp(2.2rem,5vw,4.1rem);
-  font-weight:700;
-  letter-spacing:-0.25px;
-  line-height:1.05;
+          font-family:'Auriga', serif;
+          font-size: clamp(2.2rem,5vw,4.1rem);
+          font-weight:700;
+          letter-spacing:-0.25px;
+          line-height:1.05;
           white-space: pre-line;
           margin: clamp(18px, 3vw, 26px) 0 clamp(12px, 2vw, 18px);
           color: var(--light);
@@ -375,7 +374,6 @@ export function Hero({ isReady = true }: HeroProps) {
           animation: fadeUp 0.95s ease forwards 0.3s;
         }
         .hero-title em {
-          // font-style: italic;
           color: var(--lime);
         }
 
@@ -388,9 +386,9 @@ export function Hero({ isReady = true }: HeroProps) {
         }
 
         .hero-subtitle {
-           font-family:'Porto', sans-serif;
-  font-size:clamp(0.9rem,1.5vw,1.05rem);
-  font-weight:600;
+          font-family:'Porto', sans-serif;
+          font-size:clamp(0.9rem,1.5vw,1.05rem);
+          font-weight:600;
           color: white;
           letter-spacing: 0.3px;
           margin-bottom: 10px;
@@ -425,8 +423,8 @@ export function Hero({ isReady = true }: HeroProps) {
           color: #111;
           padding: clamp(12px, 1.5vw, 14px) clamp(22px, 3vw, 30px);
           border-radius: var(--radius);
-           font-family:'Auriga', serif;
-  font-weight:600;
+          font-family:'Auriga', serif;
+          font-weight:600;
           font-size: clamp(0.83rem, 1.3vw, 0.92rem);
           text-decoration: none;
           letter-spacing: 0.2px;
@@ -447,8 +445,8 @@ export function Hero({ isReady = true }: HeroProps) {
           color: rgba(240,237,232,0.75);
           padding: clamp(11px, 1.4vw, 13px) clamp(22px, 3vw, 30px);
           border-radius: var(--radius);
-           font-family:'Auriga', serif;
-  font-weight:600;
+          font-family:'Auriga', serif;
+          font-weight:600;
           text-decoration: none;
           letter-spacing: 0.2px;
           transition: border-color 0.25s, color 0.25s, background 0.25s;
@@ -580,7 +578,7 @@ export function Hero({ isReady = true }: HeroProps) {
       <section ref={sectionRef} id="home" className="hero">
         <div className="hero-bg">
           {!loading && (
-            <video key={videoSrc} autoPlay muted loop playsInline preload="metadata" poster={posterSrc}>
+            <video key={videoSrc} autoPlay muted loop playsInline preload="metadata">
               <source src={videoSrc} type="video/mp4" />
             </video>
           )}
@@ -600,11 +598,6 @@ export function Hero({ isReady = true }: HeroProps) {
             <a href="#portfolio" className="btn-ghost">Watch Portfolio</a>
           </div>
         </div>
-
-        {/* <div className="hero-scroll">
-          <div className="scroll-mouse"><span /></div>
-          <span className="scroll-label">Scroll</span>
-        </div> */}
       </section>
     </>
   );

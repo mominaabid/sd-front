@@ -49,7 +49,6 @@ export function TeamPage() {
   const [loadingBTS, setLoadingBTS]     = useState(true);
   const [errorBTS, setErrorBTS]         = useState<string | null>(null);
 
-  // Lightbox state — supports both image AND next/prev navigation
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const lightboxItems = useMemo(() => [
     ...teamMembers.map(m => ({ src: m.picture, type: 'image' as const, label: m.name })),
@@ -57,9 +56,6 @@ export function TeamPage() {
   ], [teamMembers, btsMedia]);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-
-  // Selected team member for mobile detail panel
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
 
   const navLinks = [
@@ -69,14 +65,12 @@ export function TeamPage() {
     { label: 'Our Team',  href: '/team',        type: 'router' },
   ];
 
-  // ── Scroll to top instantly on mount (before first paint)
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
   }, []);
 
-  // ── Fetch team
   useEffect(() => {
     (async () => {
       setLoadingTeam(true);
@@ -92,7 +86,6 @@ export function TeamPage() {
     })();
   }, []);
 
-  // ── Fetch BTS
   useEffect(() => {
     (async () => {
       setLoadingBTS(true);
@@ -100,18 +93,12 @@ export function TeamPage() {
         const res  = await fetch(`${API_BASE_URL}behind-the-scenes/`);
         if (!res.ok) throw new Error();
         const json = await res.json();
-
         const raw: Record<string, unknown>[] = json.data || json.results || [];
-
         const normalized: BTSMedia[] = raw.map((item) => {
-          // Backend sends media_type: "photo" or "video"
           const isVideo = (item.media_type as string) === 'video';
-
-          // Use photo URL for images, video_file for videos
           const resolvedUrl = isVideo
             ? (item.video_file as string) || ''
             : (item.photo as string) || '';
-
           return {
             id:        item.id as number,
             title:     item.title as string || '',
@@ -119,7 +106,6 @@ export function TeamPage() {
             type:      isVideo ? 'video' : 'image',
           };
         });
-
         setBtsMedia(normalized);
       } catch {
         setErrorBTS('Could not load behind-the-scenes media.');
@@ -128,53 +114,38 @@ export function TeamPage() {
     })();
   }, []);
 
-  // ── Intersection observer for fade-up
   useEffect(() => {
     const els = Array.from(pageRef.current?.querySelectorAll('.tp-fade') ?? []);
-
-    // Reset so re-runs after data load work correctly
     els.forEach(el => {
       el.classList.remove('tp-visible');
       (el as HTMLElement).style.transitionDelay = '';
     });
-
-    // Group elements by their parent so cards in the same grid stagger together
     const seen = new Map<Element, number>();
-
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;
           const target = entry.target as HTMLElement;
-
-          // Count siblings already triggered in this parent to compute stagger
           const parent = target.parentElement ?? document.body;
           const siblingIndex = seen.get(parent) ?? 0;
           seen.set(parent, siblingIndex + 1);
-
-          // Apply stagger delay only at trigger time
           const delay = siblingIndex * 60;
           target.style.transitionDelay = `${delay}ms`;
-
           requestAnimationFrame(() => {
             setTimeout(() => {
               target.classList.add('tp-visible');
-              // Clear delay after animation completes so hover transitions aren't delayed
               setTimeout(() => { target.style.transitionDelay = '0ms'; }, 750 + delay);
             }, 16);
           });
-
           observer.unobserve(target);
         });
       },
       { threshold: 0.05, rootMargin: '0px 0px -32px 0px' }
     );
-
     els.forEach(el => observer.observe(el));
     return () => observer.disconnect();
   }, [teamMembers, btsMedia]);
 
-  // ── Keyboard handlers
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') { setLightboxIndex(null); setSelectedMember(null); }
@@ -186,24 +157,14 @@ export function TeamPage() {
     return () => window.removeEventListener('keydown', handler);
   }, [lightboxIndex, lightboxItems.length]);
 
-  // ── Body scroll lock
   useEffect(() => {
     document.body.style.overflow = (mobileMenuOpen || lightboxIndex !== null || selectedMember !== null) ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [mobileMenuOpen, lightboxIndex, selectedMember]);
 
-
-  const openTeamLightbox = (member: TeamMember) => {
-    const idx = lightboxItems.findIndex(x => x.src === (member.picture));
-    setLightboxIndex(idx >= 0 ? idx : null);
-  };
-
   return (
     <div ref={pageRef} className="min-h-screen bg-[#222120] text-white overflow-x-hidden">
 
-      {/* ═══════════════════════════════════════════
-          STYLES
-      ═══════════════════════════════════════════ */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap');
 
@@ -222,59 +183,34 @@ export function TeamPage() {
 
         body { font-family: 'Outfit', sans-serif; -webkit-font-smoothing: antialiased; }
 
-        /* ── Scroll reveal ── */
         .tp-fade {
           opacity: 0;
           transform: translateY(24px) translateZ(0);
-          transition:
-            opacity   0.75s cubic-bezier(0.16, 1, 0.3, 1),
-            transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
           will-change: opacity, transform;
           backface-visibility: hidden;
           -webkit-backface-visibility: hidden;
         }
-        .tp-fade.tp-visible {
-          opacity: 1;
-          transform: translateY(0) translateZ(0);
-        }
+        .tp-fade.tp-visible { opacity: 1; transform: translateY(0) translateZ(0); }
 
-        /* ══════════════════════════
-           NAVBAR
-        ══════════════════════════ */
+        /* ── NAVBAR ── */
         .tp-nav {
-          position: fixed;
-          inset: 0 0 auto 0;
-          height: var(--nav-h);
-          z-index: 200;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          position: fixed; inset: 0 0 auto 0; height: var(--nav-h); z-index: 200;
+          display: flex; align-items: center; justify-content: center;
           padding: 0 clamp(16px, 4vw, 48px);
           background: rgba(20,19,18,0.94);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
+          backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
           border-bottom: 1px solid rgba(255,255,255,0.07);
           box-shadow: 0 4px 32px rgba(0,0,0,0.45);
-          transition: box-shadow 0.3s;
         }
-        .tp-nav-inner {
-          width: 100%; max-width: 1280px;
-          display: flex; align-items: center; justify-content: space-between;
-        }
+        .tp-nav-inner { width: 100%; max-width: 1280px; display: flex; align-items: center; justify-content: space-between; }
         .tp-logo { flex-shrink:0; display:flex; align-items:center; text-decoration:none; }
         .tp-logo img { height: clamp(38px,5vw,52px); width:auto; display:block; }
-
-        .tp-nav-links {
-          display: flex; align-items: center;
-          gap: clamp(16px, 2.2vw, 34px);
-          list-style: none; margin:0; padding:0;
-        }
+        .tp-nav-links { display: flex; align-items: center; gap: clamp(16px, 2.2vw, 34px); list-style: none; margin:0; padding:0; }
         .tp-nav-links li a {
-          color: rgba(240,237,232,0.68);
-          text-decoration: none;
+          color: rgba(240,237,232,0.68); text-decoration: none;
           font-size: 0.875rem; font-weight:400; letter-spacing:0.4px;
-          padding-bottom: 3px; position: relative;
-          transition: color 0.25s;
+          padding-bottom: 3px; position: relative; transition: color 0.25s;
         }
         .tp-nav-links li a::after {
           content:''; position:absolute; bottom:0; left:0;
@@ -283,382 +219,190 @@ export function TeamPage() {
         }
         .tp-nav-links li a:hover { color: var(--light); }
         .tp-nav-links li a:hover::after { width:100%; }
-
         .tp-nav-cta {
           background: var(--lime) !important; color: #111 !important;
           padding: 9px 20px !important; border-radius: var(--r) !important;
           font-weight:600 !important; font-size:0.85rem !important;
           white-space:nowrap; position:relative; overflow:hidden;
           transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.35s !important;
-          will-change: transform;
-        }
-        .tp-nav-cta::before {
-          content:''; position:absolute; inset:0;
-          background:rgba(255,255,255,0.2); opacity:0;
-          transition: opacity 0.3s;
         }
         .tp-nav-cta:hover { transform:translateY(-3px) scale(1.02); box-shadow:0 10px 28px rgba(200,244,0,0.35)!important; }
-        .tp-nav-cta:hover::before { opacity:1; }
         .tp-nav-cta::after { display:none!important; }
-
-        /* hamburger */
         .tp-ham {
           display:none; flex-direction:column; justify-content:center; align-items:center;
           width:44px; height:44px; gap:5px; cursor:pointer;
-          background:none; border:1px solid rgba(255,255,255,0.12);
-          border-radius:10px; padding:0; flex-shrink:0;
+          background:none; border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:0; flex-shrink:0;
           transition: border-color 0.2s, background 0.2s;
         }
         .tp-ham:hover { border-color:rgba(200,244,0,0.45); background:rgba(200,244,0,0.05); }
-        .tp-ham span {
-          display:block; width:20px; height:1.5px;
-          background:var(--light); border-radius:2px;
-          transition: transform 0.38s cubic-bezier(0.23,1,0.32,1), opacity 0.22s, background 0.22s;
-        }
+        .tp-ham span { display:block; width:20px; height:1.5px; background:var(--light); border-radius:2px; transition: transform 0.38s cubic-bezier(0.23,1,0.32,1), opacity 0.22s; }
         .tp-ham.open span { background: var(--lime); }
         .tp-ham.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
         .tp-ham.open span:nth-child(2) { opacity:0; transform:scaleX(0); }
         .tp-ham.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
-
-        /* overlay */
-        .tp-overlay {
-          display:none; position:fixed; inset:0;
-          background:rgba(0,0,0,0); z-index:205;
-          pointer-events:none; transition:background 0.35s;
-        }
+        .tp-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0); z-index:205; pointer-events:none; transition:background 0.35s; }
         .tp-overlay.open { background:rgba(0,0,0,0.65); pointer-events:auto; backdrop-filter:blur(4px); }
-
-        /* drawer */
         .tp-drawer {
-          display:none; position:fixed;
-          top:0; right:0; bottom:0; width:min(340px,88vw);
-          background:var(--dark-mid); z-index:210;
-          flex-direction:column;
-          transform:translateX(100%);
-          transition:transform 0.42s cubic-bezier(0.16,1,0.3,1);
+          display:none; position:fixed; top:0; right:0; bottom:0; width:min(340px,88vw);
+          background:var(--dark-mid); z-index:210; flex-direction:column;
+          transform:translateX(100%); transition:transform 0.42s cubic-bezier(0.16,1,0.3,1);
           border-left:1px solid rgba(255,255,255,0.07);
         }
         .tp-drawer.open { transform:translateX(0); }
-        .tp-drawer-hdr {
-          display:flex; align-items:center; justify-content:space-between;
-          padding:0 20px; height:var(--nav-h);
-          border-bottom:1px solid rgba(255,255,255,0.06); flex-shrink:0;
-        }
+        .tp-drawer-hdr { display:flex; align-items:center; justify-content:space-between; padding:0 20px; height:var(--nav-h); border-bottom:1px solid rgba(255,255,255,0.06); flex-shrink:0; }
         .tp-drawer-body { flex:1; overflow-y:auto; padding:8px 0; }
-        .tp-mob-link {
-          display:flex; align-items:center; justify-content:space-between;
-          padding:15px 24px; color:rgba(240,237,232,0.75);
-          text-decoration:none; font-size:1rem; font-weight:400; letter-spacing:0.2px;
-          border-bottom:1px solid rgba(255,255,255,0.04);
-          transition:
-            color       0.3s cubic-bezier(0.16, 1, 0.3, 1),
-            background  0.3s cubic-bezier(0.16, 1, 0.3, 1),
-            padding-left 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-        }
+        .tp-mob-link { display:flex; align-items:center; justify-content:space-between; padding:15px 24px; color:rgba(240,237,232,0.75); text-decoration:none; font-size:1rem; font-weight:400; border-bottom:1px solid rgba(255,255,255,0.04); transition: color 0.3s, background 0.3s, padding-left 0.35s; }
         .tp-mob-link:last-child { border-bottom:none; }
         .tp-mob-link:hover { color:var(--light); background:rgba(200,244,0,0.05); padding-left:32px; }
-        .tp-mob-arr {
-          font-size:0.8rem; color:var(--lime);
-          opacity:0; transform:translateX(-6px);
-          transition:
-            opacity   0.3s cubic-bezier(0.16, 1, 0.3, 1),
-            transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-        }
+        .tp-mob-arr { font-size:0.8rem; color:var(--lime); opacity:0; transform:translateX(-6px); transition: opacity 0.3s, transform 0.35s; }
         .tp-mob-link:hover .tp-mob-arr { opacity:1; transform:translateX(0); }
         .tp-drawer-ftr { padding:20px 20px 36px; border-top:1px solid rgba(255,255,255,0.06); flex-shrink:0; }
-        .tp-mob-cta {
-          display:flex; align-items:center; justify-content:center; width:100%;
-          background:var(--lime); color:#111; padding:15px; border-radius:var(--r);
-          font-weight:600; font-size:0.95rem; text-decoration:none;
-          transition:transform 0.2s, box-shadow 0.2s;
-        }
+        .tp-mob-cta { display:flex; align-items:center; justify-content:center; width:100%; background:var(--lime); color:#111; padding:15px; border-radius:var(--r); font-weight:600; font-size:0.95rem; text-decoration:none; transition:transform 0.2s, box-shadow 0.2s; }
         .tp-mob-cta:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(200,244,0,0.28); }
+        @media (max-width: 860px) { .tp-nav-links li:nth-child(1), .tp-nav-links li:nth-child(3) { display:none; } }
+        @media (max-width: 600px) { .tp-nav-links { display:none; } .tp-ham { display:flex; } .tp-overlay { display:block; } .tp-drawer { display:flex; } }
 
-        @media (max-width: 860px) {
-          .tp-nav-links li:nth-child(1),
-          .tp-nav-links li:nth-child(3) { display:none; }
-        }
-        @media (max-width: 600px) {
-          .tp-nav-links { display:none; }
-          .tp-ham { display:flex; }
-          .tp-overlay { display:block; }
-          .tp-drawer { display:flex; }
-        }
-
-        /* ══════════════════════════
-           PAGE HEADER
-        ══════════════════════════ */
+        /* ── PAGE HEADER ── */
         .tp-header {
-          background: #1a1815;
-          border-bottom: 1px solid #3a3835;
+          background: #1a1815; border-bottom: 1px solid #3a3835;
           padding: calc(var(--nav-h) + clamp(32px,5vw,56px)) clamp(16px,5vw,48px) clamp(40px,6vw,72px);
           text-align: center;
         }
         .tp-header-eyebrow {
           display: inline-flex; align-items: center; gap: 12px;
           color: var(--lime); font-size: clamp(0.62rem,1.1vw,0.7rem);
-          font-weight:500; letter-spacing:3.5px; text-transform:uppercase;
-          margin-bottom: 16px;
+          font-weight:500; letter-spacing:3.5px; text-transform:uppercase; margin-bottom: 16px;
         }
-        .tp-header-eyebrow::before,.tp-header-eyebrow::after {
-          content:''; display:block; width:28px; height:1px;
-          background:var(--lime); opacity:0.55;
-        }
-        .tp-header h1 {
-          font-family: 'Cormorant Garamond', Georgia, serif;
-          font-size: clamp(2.6rem, 7vw, 5rem);
-          font-weight: 300; line-height: 1.08;
-          margin-bottom: clamp(12px,2vw,20px);
-          color: var(--light);
-        }
+        .tp-header-eyebrow::before,.tp-header-eyebrow::after { content:''; display:block; width:28px; height:1px; background:var(--lime); opacity:0.55; }
+        .tp-header h1 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: clamp(2.6rem, 7vw, 5rem); font-weight: 300; line-height: 1.08; margin-bottom: clamp(12px,2vw,20px); color: var(--light); }
         .tp-header h1 em { font-style:italic; color:var(--lime); }
-        .tp-header p {
-          color: rgba(240,237,232,0.55);
-          font-size: clamp(0.9rem,1.8vw,1.1rem);
-          max-width: 560px; margin:0 auto; line-height:1.7;
-        }
-        /* Stagger the three header elements */
-        .tp-header .tp-fade:nth-child(1) { transition-delay: 0ms;   }
+        .tp-header p { color: rgba(240,237,232,0.55); font-size: clamp(0.9rem,1.8vw,1.1rem); max-width: 560px; margin:0 auto; line-height:1.7; }
+        .tp-header .tp-fade:nth-child(1) { transition-delay: 0ms; }
         .tp-header .tp-fade:nth-child(2) { transition-delay: 120ms; }
         .tp-header .tp-fade:nth-child(3) { transition-delay: 220ms; }
 
-        /* ══════════════════════════
-           TEAM GRID
-        ══════════════════════════ */
-        .tp-team-section {
-          padding: clamp(40px,7vw,80px) clamp(16px,4vw,32px);
-          max-width: 1280px; margin:0 auto;
-        }
+        /* ── TEAM GRID ── */
+        .tp-team-section { padding: clamp(40px,7vw,80px) clamp(16px,4vw,32px); max-width: 1280px; margin:0 auto; }
+        .tp-team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: clamp(12px,2vw,24px); }
 
-        .tp-team-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
-          gap: clamp(12px,2vw,24px);
-        }
-
-        /* Card */
+        /* ── TEAM CARD ── */
         .tp-card {
-          position: relative; border-radius: 14px; overflow:hidden;
-          cursor: pointer; background: var(--dark-sur);
+          position: relative; border-radius: 14px; overflow: hidden;
+          background: var(--dark-sur);
           box-shadow: 0 4px 24px rgba(0,0,0,0.3);
-          transition:
-            transform  0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
-            box-shadow 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+          /* NO cursor:pointer — not clickable */
+          transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
           will-change: transform;
           transform: translateZ(0);
           backface-visibility: hidden;
         }
         .tp-card:hover { transform: translateY(-6px) translateZ(0); box-shadow: 0 20px 48px rgba(0,0,0,0.55); }
+
         .tp-card-img-wrap { position:relative; aspect-ratio:3/4; overflow:hidden; }
         .tp-card-img-wrap img {
           width:100%; height:100%; object-fit:cover;
           transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
-          will-change: transform;
-          transform: translateZ(0);
+          will-change: transform; transform: translateZ(0);
         }
-        .tp-card:hover .tp-card-img-wrap img { transform: scale(1.1) translateZ(0); }
+        .tp-card:hover .tp-card-img-wrap img { transform: scale(1.08) translateZ(0); }
 
-        /* Default label (always visible) */
+        /* Default label — fades out on hover */
         .tp-card-label {
-          position:absolute; inset-x:0; bottom:0;
-          padding: clamp(32px,5vw,48px) clamp(12px,3vw,18px) clamp(12px,2vw,16px);
-          background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, transparent 100%);
-          transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+          position:absolute; inset:0;
+          height: 100%;
+          padding: 0 clamp(12px,3vw,18px) clamp(12px,2vw,16px);
+          display: flex; flex-direction: column; justify-content: flex-end;
+          background: linear-gradient(
+            to top,
+            rgba(0,0,0,0.88) 0%,
+            rgba(0,0,0,0.65) 25%,
+            rgba(0,0,0,0.30) 55%,
+            rgba(0,0,0,0.08) 80%,
+            transparent 100%
+          );
+          transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1);
           will-change: opacity;
         }
-        .tp-card:hover .tp-card-label { opacity:0; }
-        .tp-card-label h4 {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: clamp(1rem,2vw,1.2rem); font-weight:400; margin-bottom:4px;
-        }
+        .tp-card:hover .tp-card-label { opacity: 0; }
+        .tp-card-label h4 { font-family: 'Cormorant Garamond', serif; font-size: clamp(1rem,2vw,1.2rem); font-weight:400; margin-bottom:4px; }
         .tp-card-label p { color:var(--lime); font-size:0.78rem; font-weight:500; }
 
-        /* Hover overlay */
+        /* ── HOVER OVERLAY — key fix: start fully transparent, no background jump ── */
         .tp-card-overlay {
-          position:absolute; inset:0;
-          background: rgba(14,13,12,0.9);
-          display:flex; flex-direction:column; justify-content:flex-end;
+          position: absolute;
+          inset: 0;
+          /* Use a semi-transparent dark color from the start — only opacity animates */
+          background: rgba(10, 9, 8, 0.91);
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
           padding: clamp(14px,3vw,20px);
-          opacity:0;
-          transform: translateY(12px);
-          transition:
-            opacity   0.45s cubic-bezier(0.16, 1, 0.3, 1),
-            transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-          will-change: opacity, transform;
+          /* Start invisible */
+          opacity: 0;
+          /* Single transition on opacity only — smooth fade in/out */
+          transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+          will-change: opacity;
+          /* No transform animation — eliminates the "snap" feel */
         }
-        .tp-card:hover .tp-card-overlay { opacity:1; transform:translateY(0); }
-        .tp-card-overlay h4 {
-          font-family:'Cormorant Garamond',serif;
-          font-size:clamp(1rem,2vw,1.2rem); font-weight:400; margin-bottom:4px;
+        .tp-card:hover .tp-card-overlay { opacity: 1; }
+
+        /* Content inside overlay slides up subtly */
+        .tp-card-overlay > * {
+          transform: translateY(8px);
+          transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+          opacity: 0;
         }
+        .tp-card:hover .tp-card-overlay > * {
+          transform: translateY(0);
+          opacity: 1;
+        }
+        /* Stagger children inside overlay */
+        .tp-card:hover .tp-card-overlay > *:nth-child(1) { transition-delay: 0.05s; }
+        .tp-card:hover .tp-card-overlay > *:nth-child(2) { transition-delay: 0.10s; }
+        .tp-card:hover .tp-card-overlay > *:nth-child(3) { transition-delay: 0.15s; }
+        .tp-card:hover .tp-card-overlay > *:nth-child(4) { transition-delay: 0.20s; }
+
+        .tp-card-overlay h4 { font-family:'Cormorant Garamond',serif; font-size:clamp(1rem,2vw,1.2rem); font-weight:400; margin-bottom:4px; color: var(--light); }
         .tp-card-overlay .tp-role { color:var(--lime); font-size:0.78rem; margin-bottom:10px; }
-        .tp-card-overlay .tp-bio {
-          color:rgba(240,237,232,0.75); font-size:0.78rem; line-height:1.6;
-          display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;
-          margin-bottom:10px;
-        }
-        .tp-card-overlay .tp-li-link {
-          display:inline-flex; align-items:center; gap:6px;
-          color:var(--lime); font-size:0.8rem; font-weight:500;
-          text-decoration:none; transition:color 0.2s;
-        }
+        .tp-card-overlay .tp-bio { color:rgba(240,237,232,0.75); font-size:0.78rem; line-height:1.6; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:10px; }
+        .tp-card-overlay .tp-li-link { display:inline-flex; align-items:center; gap:6px; color:var(--lime); font-size:0.8rem; font-weight:500; text-decoration:none; transition:color 0.2s; }
         .tp-card-overlay .tp-li-link:hover { color:#fff; }
 
-        /* Mobile: tap-to-reveal panel instead of hover overlay */
-        .tp-member-panel {
-          position:fixed; inset:0; z-index:300;
-          display:flex; align-items:flex-end;
-          background: rgba(0,0,0,0);
-          backdrop-filter: blur(0px);
-          animation: panelFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        @keyframes panelFadeIn {
-          to { background: rgba(0,0,0,0.72); backdrop-filter: blur(8px); }
-        }
-        .tp-member-panel-inner {
-          width:100%; background:var(--dark-mid);
-          border-radius:24px 24px 0 0;
-          padding:28px 24px 44px;
-          max-height:82vh; overflow-y:auto;
-          transform: translateY(100%);
-          animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-          box-shadow: 0 -8px 40px rgba(0,0,0,0.5);
-        }
-        @keyframes slideUp {
-          to { transform: translateY(0); }
-        }
-        .tp-panel-close {
-          position:absolute; top:16px; right:16px;
-          width:36px; height:36px; border-radius:50%;
-          background:rgba(255,255,255,0.1); border:none; cursor:pointer;
-          display:flex; align-items:center; justify-content:center;
-          color:var(--light); transition:background 0.2s;
-        }
+        /* ── MOBILE PANEL ── */
+        .tp-member-panel { position:fixed; inset:0; z-index:300; display:flex; align-items:flex-end; background: rgba(0,0,0,0); backdrop-filter: blur(0px); animation: panelFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes panelFadeIn { to { background: rgba(0,0,0,0.72); backdrop-filter: blur(8px); } }
+        .tp-member-panel-inner { width:100%; background:var(--dark-mid); border-radius:24px 24px 0 0; padding:28px 24px 44px; max-height:82vh; overflow-y:auto; transform: translateY(100%); animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; box-shadow: 0 -8px 40px rgba(0,0,0,0.5); }
+        @keyframes slideUp { to { transform: translateY(0); } }
+        .tp-panel-close { position:absolute; top:16px; right:16px; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.1); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--light); transition:background 0.2s; }
         .tp-panel-close:hover { background:var(--lime); color:#111; }
 
-        /* ══════════════════════════
-           SECTION TITLE
-        ══════════════════════════ */
-        .tp-section-title {
-          text-align:center;
-          margin-bottom: clamp(24px,4vw,48px);
-        }
-        .tp-section-title h2 {
-          font-family:'Cormorant Garamond',serif;
-          font-size: clamp(1.8rem,4vw,3rem);
-          font-weight:300; color:var(--light);
-        }
+        /* ── SECTION TITLE ── */
+        .tp-section-title { text-align:center; margin-bottom: clamp(24px,4vw,48px); }
+        .tp-section-title h2 { font-family:'Cormorant Garamond',serif; font-size: clamp(1.8rem,4vw,3rem); font-weight:300; color:var(--light); }
         .tp-section-title h2 em { font-style:italic; color:var(--lime); }
-        .tp-section-title .tp-rule {
-          width:40px; height:1px; margin:12px auto 0;
-          background:linear-gradient(90deg,var(--lime),transparent);
-        }
+        .tp-section-title .tp-rule { width:40px; height:1px; margin:12px auto 0; background:linear-gradient(90deg,var(--lime),transparent); }
 
-        /* ══════════════════════════
-           BTS SECTION
-        ══════════════════════════ */
-        .tp-bts-section {
-          background:#1a1815;
-          padding: clamp(40px,7vw,80px) clamp(16px,4vw,32px);
-        }
+        /* ── BTS ── */
+        .tp-bts-section { background:#1a1815; padding: clamp(40px,7vw,80px) clamp(16px,4vw,32px); }
         .tp-bts-inner { max-width:1280px; margin:0 auto; }
-
-        .tp-bts-grid {
-          display:grid;
-          grid-template-columns: repeat(auto-fill, minmax(min(260px,100%), 1fr));
-          gap: clamp(10px,2vw,20px);
-        }
-
-        .tp-bts-item {
-          position:relative; border-radius:12px; overflow:hidden;
-          cursor:pointer; background:var(--dark-sur);
-          box-shadow:0 4px 16px rgba(0,0,0,0.3);
-          transition:
-            transform  0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
-            box-shadow 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-          will-change: transform;
-          transform: translateZ(0);
-          backface-visibility: hidden;
-        }
+        .tp-bts-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(min(260px,100%), 1fr)); gap: clamp(10px,2vw,20px); }
+        .tp-bts-item { position:relative; border-radius:12px; overflow:hidden; cursor:pointer; background:var(--dark-sur); box-shadow:0 4px 16px rgba(0,0,0,0.3); transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); will-change: transform; transform: translateZ(0); }
         .tp-bts-item:hover { transform: translateY(-4px) translateZ(0); box-shadow:0 14px 36px rgba(0,0,0,0.5); }
-        .tp-bts-item img,
-        .tp-bts-item video {
-          width:100%;
-          height: clamp(160px, 22vw, 240px);
-          object-fit:cover;
-          display:block;
-          transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-          will-change: transform;
-          transform: translateZ(0);
-        }
-        .tp-bts-item:hover img,
-        .tp-bts-item:hover video { transform: scale(1.08) translateZ(0); }
-        .tp-bts-caption {
-          position:absolute; inset-x:0; bottom:0;
-          padding:28px 12px 12px;
-          background:linear-gradient(to top, rgba(0,0,0,0.85), transparent);
-        }
+        .tp-bts-item img, .tp-bts-item video { width:100%; height: clamp(160px, 22vw, 240px); object-fit:cover; display:block; transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); will-change: transform; transform: translateZ(0); }
+        .tp-bts-item:hover img, .tp-bts-item:hover video { transform: scale(1.08) translateZ(0); }
+        .tp-bts-caption { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; padding:0 12px 12px; background:linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.65) 25%, rgba(0,0,0,0.30) 55%, rgba(0,0,0,0.08) 80%, transparent 100%); }
         .tp-bts-caption p { color:var(--lime); font-size:0.78rem; font-weight:500; }
 
-        /* ══════════════════════════
-           LIGHTBOX
-        ══════════════════════════ */
-        .tp-lightbox {
-          position:fixed; inset:0; z-index:400;
-          background: rgba(0,0,0,0);
-          display:flex; flex-direction:column;
-          align-items:center; justify-content:center;
-          padding: clamp(12px,3vw,24px);
-          animation: lbFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        @keyframes lbFadeIn {
-          to { background: rgba(0,0,0,0.97); }
-        }
-        .tp-lb-media {
-          max-width:min(900px,92vw);
-          max-height:80svh;
-          object-fit:contain;
-          border-radius:12px;
-          box-shadow:0 24px 64px rgba(0,0,0,0.8);
-          opacity: 0;
-          transform: scale(0.94) translateY(10px);
-          animation: lbMediaIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
-          will-change: opacity, transform;
-        }
-        @keyframes lbMediaIn {
-          to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        .tp-lb-caption {
-          margin-top:14px;
-          color:rgba(240,237,232,0.5);
-          font-size:0.82rem; letter-spacing:0.3px; text-align:center;
-          opacity: 0;
-          animation: lbCaptionIn 0.4s ease forwards 0.3s;
-        }
-        @keyframes lbCaptionIn {
-          to { opacity: 1; }
-        }
-
-        .tp-lb-close {
-          position:absolute; top:clamp(12px,2vw,20px); right:clamp(12px,2vw,20px);
-          width:44px; height:44px; border-radius:50%;
-          background:rgba(255,255,255,0.08); border:none; cursor:pointer;
-          display:flex; align-items:center; justify-content:center;
-          color:var(--light);
-          transition: background 0.25s cubic-bezier(0.16,1,0.3,1), color 0.25s, transform 0.25s;
-          z-index:10;
-        }
+        /* ── LIGHTBOX ── */
+        .tp-lightbox { position:fixed; inset:0; z-index:400; background: rgba(0,0,0,0); display:flex; flex-direction:column; align-items:center; justify-content:center; padding: clamp(12px,3vw,24px); animation: lbFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes lbFadeIn { to { background: rgba(0,0,0,0.97); } }
+        .tp-lb-media { max-width:min(900px,92vw); max-height:80svh; object-fit:contain; border-radius:12px; box-shadow:0 24px 64px rgba(0,0,0,0.8); opacity: 0; transform: scale(0.94) translateY(10px); animation: lbMediaIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards; }
+        @keyframes lbMediaIn { to { opacity: 1; transform: scale(1) translateY(0); } }
+        .tp-lb-caption { margin-top:14px; color:rgba(240,237,232,0.5); font-size:0.82rem; letter-spacing:0.3px; text-align:center; opacity: 0; animation: lbCaptionIn 0.4s ease forwards 0.3s; }
+        @keyframes lbCaptionIn { to { opacity: 1; } }
+        .tp-lb-close { position:absolute; top:clamp(12px,2vw,20px); right:clamp(12px,2vw,20px); width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,0.08); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--light); transition: background 0.25s, color 0.25s, transform 0.25s; z-index:10; }
         .tp-lb-close:hover { background:var(--lime); color:#111; transform: rotate(90deg) scale(1.1); }
-
-        .tp-lb-nav {
-          position:absolute; top:50%; transform:translateY(-50%);
-          width:48px; height:48px; border-radius:50%;
-          background:rgba(255,255,255,0.08); border:none; cursor:pointer;
-          display:flex; align-items:center; justify-content:center;
-          color:var(--light);
-          transition: background 0.25s cubic-bezier(0.16,1,0.3,1), color 0.25s, transform 0.25s, opacity 0.25s;
-          will-change: transform;
-        }
+        .tp-lb-nav { position:absolute; top:50%; transform:translateY(-50%); width:48px; height:48px; border-radius:50%; background:rgba(255,255,255,0.08); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--light); transition: background 0.25s, color 0.25s, transform 0.25s, opacity 0.25s; }
         .tp-lb-nav:hover { background:var(--lime); color:#111; }
         .tp-lb-prev:hover { transform: translateY(-50%) translateX(-3px); }
         .tp-lb-next:hover { transform: translateY(-50%) translateX(3px); }
@@ -666,31 +410,19 @@ export function TeamPage() {
         .tp-lb-prev { left:clamp(8px,2vw,20px); }
         .tp-lb-next { right:clamp(8px,2vw,20px); }
 
-        /* ══════════════════════════
-           EMPTY / LOADING STATES
-        ══════════════════════════ */
-        .tp-state {
-          text-align:center; padding:clamp(40px,8vw,80px) 16px;
-          color:rgba(240,237,232,0.4);
-          font-size:clamp(0.9rem,2vw,1.1rem);
-        }
+        /* ── STATES ── */
+        .tp-state { text-align:center; padding:clamp(40px,8vw,80px) 16px; color:rgba(240,237,232,0.4); font-size:clamp(0.9rem,2vw,1.1rem); }
         .tp-state.error { color:#f87171; }
 
-        /* ══════════════════════════
-           REDUCED MOTION
-        ══════════════════════════ */
         @media (prefers-reduced-motion: reduce) {
-          *, *::before, *::after {
-            animation-duration:0.01ms!important;
-            transition-duration:0.01ms!important;
-          }
+          *, *::before, *::after { animation-duration:0.01ms!important; transition-duration:0.01ms!important; }
         }
       `}</style>
 
-      {/* ─── Mobile overlay ─── */}
+      {/* Mobile overlay */}
       <div className={`tp-overlay ${mobileMenuOpen ? 'open' : ''}`} onClick={() => setMobileMenuOpen(false)} />
 
-      {/* ─── Mobile drawer ─── */}
+      {/* Mobile drawer */}
       <div className={`tp-drawer ${mobileMenuOpen ? 'open' : ''}`}>
         <div className="tp-drawer-hdr">
           <a href="/" className="tp-logo" onClick={() => setMobileMenuOpen(false)}>
@@ -720,7 +452,7 @@ export function TeamPage() {
         </div>
       </div>
 
-      {/* ─── Navbar ─── */}
+      {/* Navbar */}
       <nav className="tp-nav">
         <div className="tp-nav-inner">
           <a href="/" className="tp-logo">
@@ -744,7 +476,7 @@ export function TeamPage() {
         </div>
       </nav>
 
-      {/* ─── Page Header ─── */}
+      {/* Page Header */}
       <div className="tp-header">
         <p className="tp-fade tp-header-eyebrow">The Editors Behind the Magic</p>
         <h1 className="tp-fade">Meet Our <em>Team</em></h1>
@@ -753,7 +485,7 @@ export function TeamPage() {
         </p>
       </div>
 
-      {/* ─── Team Grid ─── */}
+      {/* Team Grid */}
       <div className="tp-team-section">
         {loadingTeam ? (
           <div className="tp-state">Loading team members…</div>
@@ -762,18 +494,7 @@ export function TeamPage() {
         ) : (
           <div className="tp-team-grid">
             {teamMembers.map((member) => (
-              <div
-                key={member.id}
-                className="tp-fade tp-card"
-                onClick={() => {
-                  // On touch devices open bottom panel; on desktop rely on CSS hover
-                  if (window.matchMedia('(hover: none)').matches) {
-                    setSelectedMember(member);
-                  } else {
-                    openTeamLightbox(member);
-                  }
-                }}
-              >
+              <div key={member.id} className="tp-fade tp-card">
                 <div className="tp-card-img-wrap">
                   <img src={member.picture} alt={member.name} loading="lazy" />
                 </div>
@@ -784,7 +505,7 @@ export function TeamPage() {
                   <p>{member.role}</p>
                 </div>
 
-                {/* Hover overlay (desktop) */}
+                {/* Hover overlay */}
                 <div className="tp-card-overlay">
                   <h4>{member.name}</h4>
                   <p className="tp-role">{member.role}</p>
@@ -795,7 +516,6 @@ export function TeamPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="tp-li-link"
-                      onClick={e => e.stopPropagation()}
                     >
                       <Linkedin size={15} /> LinkedIn
                     </a>
@@ -807,7 +527,7 @@ export function TeamPage() {
         )}
       </div>
 
-      {/* ─── BTS Section ─── */}
+      {/* BTS Section */}
       <div className="tp-bts-section">
         <div className="tp-bts-inner">
           <div className="tp-fade tp-section-title">
@@ -824,7 +544,6 @@ export function TeamPage() {
           ) : (
             <div className="tp-bts-grid">
               {btsMedia.map((item, btsIdx) => {
-                // BTS items sit after all team members in lightboxItems
                 const lbIdx = teamMembers.length + btsIdx;
                 return (
                   <div
@@ -846,7 +565,7 @@ export function TeamPage() {
         </div>
       </div>
 
-      {/* ─── Mobile member detail panel ─── */}
+      {/* Mobile member panel */}
       {selectedMember && (
         <div className="tp-member-panel" onClick={() => setSelectedMember(null)}>
           <div className="tp-member-panel-inner" onClick={e => e.stopPropagation()}>
@@ -854,28 +573,15 @@ export function TeamPage() {
               <X size={18} />
             </button>
             <div style={{ display:'flex', alignItems:'center', gap:16, marginBottom:16 }}>
-              <img
-                src={selectedMember.picture}
-                alt={selectedMember.name}
-                style={{ width:64, height:64, borderRadius:'50%', objectFit:'cover', flexShrink:0 }}
-              />
+              <img src={selectedMember.picture} alt={selectedMember.name} style={{ width:64, height:64, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />
               <div>
-                <h4 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'1.15rem', marginBottom:2 }}>
-                  {selectedMember.name}
-                </h4>
+                <h4 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'1.15rem', marginBottom:2 }}>{selectedMember.name}</h4>
                 <p style={{ color:'var(--lime)', fontSize:'0.8rem' }}>{selectedMember.role}</p>
               </div>
             </div>
-            <p style={{ color:'rgba(240,237,232,0.7)', fontSize:'0.88rem', lineHeight:1.7, marginBottom:16 }}>
-              {selectedMember.bio}
-            </p>
+            <p style={{ color:'rgba(240,237,232,0.7)', fontSize:'0.88rem', lineHeight:1.7, marginBottom:16 }}>{selectedMember.bio}</p>
             {selectedMember.linkedin_url && (
-              <a
-                href={selectedMember.linkedin_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ display:'inline-flex', alignItems:'center', gap:8, color:'var(--lime)', fontSize:'0.88rem', fontWeight:600, textDecoration:'none' }}
-              >
+              <a href={selectedMember.linkedin_url} target="_blank" rel="noopener noreferrer" style={{ display:'inline-flex', alignItems:'center', gap:8, color:'var(--lime)', fontSize:'0.88rem', fontWeight:600, textDecoration:'none' }}>
                 <Linkedin size={16} /> View LinkedIn
               </a>
             )}
@@ -883,52 +589,18 @@ export function TeamPage() {
         </div>
       )}
 
-      {/* ─── Lightbox ─── */}
+      {/* Lightbox */}
       {lightboxIndex !== null && lightboxItems[lightboxIndex] && (
         <div className="tp-lightbox" onClick={() => setLightboxIndex(null)}>
-          <button className="tp-lb-close" onClick={() => setLightboxIndex(null)} aria-label="Close">
-            <X size={20} />
-          </button>
-
-          <button
-            className="tp-lb-nav tp-lb-prev"
-            disabled={lightboxIndex === 0}
-            onClick={e => { e.stopPropagation(); setLightboxIndex(i => Math.max(0, (i ?? 1) - 1)); }}
-            aria-label="Previous"
-          >
-            <ChevronLeft size={20} />
-          </button>
-
+          <button className="tp-lb-close" onClick={() => setLightboxIndex(null)} aria-label="Close"><X size={20} /></button>
+          <button className="tp-lb-nav tp-lb-prev" disabled={lightboxIndex === 0} onClick={e => { e.stopPropagation(); setLightboxIndex(i => Math.max(0, (i ?? 1) - 1)); }} aria-label="Previous"><ChevronLeft size={20} /></button>
           {lightboxItems[lightboxIndex].type === 'image' ? (
-            <img
-              key={lightboxItems[lightboxIndex].src}
-              src={lightboxItems[lightboxIndex].src}
-              alt={lightboxItems[lightboxIndex].label}
-              className="tp-lb-media"
-              onClick={e => e.stopPropagation()}
-            />
+            <img key={lightboxItems[lightboxIndex].src} src={lightboxItems[lightboxIndex].src} alt={lightboxItems[lightboxIndex].label} className="tp-lb-media" onClick={e => e.stopPropagation()} />
           ) : (
-            <video
-              key={lightboxItems[lightboxIndex].src}
-              src={lightboxItems[lightboxIndex].src}
-              className="tp-lb-media"
-              controls
-              autoPlay
-              playsInline
-              onClick={e => e.stopPropagation()}
-            />
+            <video key={lightboxItems[lightboxIndex].src} src={lightboxItems[lightboxIndex].src} className="tp-lb-media" controls autoPlay playsInline onClick={e => e.stopPropagation()} />
           )}
-
           <p className="tp-lb-caption">{lightboxItems[lightboxIndex].label}</p>
-
-          <button
-            className="tp-lb-nav tp-lb-next"
-            disabled={lightboxIndex === lightboxItems.length - 1}
-            onClick={e => { e.stopPropagation(); setLightboxIndex(i => Math.min(lightboxItems.length - 1, (i ?? 0) + 1)); }}
-            aria-label="Next"
-          >
-            <ChevronRight size={20} />
-          </button>
+          <button className="tp-lb-nav tp-lb-next" disabled={lightboxIndex === lightboxItems.length - 1} onClick={e => { e.stopPropagation(); setLightboxIndex(i => Math.min(lightboxItems.length - 1, (i ?? 0) + 1)); }} aria-label="Next"><ChevronRight size={20} /></button>
         </div>
       )}
     </div>
