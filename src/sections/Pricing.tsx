@@ -1,275 +1,275 @@
-import { useState, useEffect, useRef } from 'react';
-import { Check, X, Calendar } from 'lucide-react';
-import { API_BASE_URL } from '../constants/urls'; // Make sure this file exists
-
-// ─────────────────────────────────────────────────────────────
-// Type definitions matching your backend models
-// ─────────────────────────────────────────────────────────────
-interface PricingFeature {
-  id?: number;
-  text: string;
-  order?: number;
-}
-
-interface PricingCard {
-  id: number;
-  heading: string;
-  subheading?: string;
-  price?: number | string;           // can be number or "Contact Us"
-  card_type: 'bundle' | 'custom' | 'dedicated';
-  is_most_popular: boolean;
-  button_label: string;
-  features: PricingFeature[];
-  is_active: boolean;
-}
+import { useState, useEffect } from 'react';
+import { Check, X } from 'lucide-react';
+import { API_BASE_URL } from '../constants/urls';
 
 interface VideoType {
   id: number;
   name: string;
   price: number;
-  order?: number;
-  is_active: boolean;
 }
 
-// Form data shape – matches your Lead model
+interface PricingCard {
+  id: string;
+  card_type: string;
+  heading: string;
+  subheading?: string;
+  button_label: string;
+  is_most_popular?: boolean;
+  features?: string[];
+}
+
 interface FormData {
-  name: string;
-  company_name: string;
+  personalName: string;
+  companyName: string;
   phone: string;
   email: string;
-  selected_video_types: number[];   // array of VideoType IDs
+  videoTypes: string[];
 }
 
-// ─────────────────────────────────────────────────────────────
-export function Pricing() {
+export default function Pricing() {
   const [cards, setCards] = useState<PricingCard[]>([]);
-  const [videoTypes, setVideoTypes] = useState<VideoType[]>([]);
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [videoTypesList, setVideoTypesList] = useState<VideoType[]>([]);
+  const [selectedPlan, setSelectedPlan] = useState<PricingCard | null>(null);
   const [formData, setFormData] = useState<FormData>({
-    name: '',
-    company_name: '',
+    personalName: '',
+    companyName: '',
     phone: '',
     email: '',
-    selected_video_types: [],
+    videoTypes: [],
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const sectionRef = useRef<HTMLElement>(null);
-
-  // ─── Fetch pricing cards & video types ─────────────────────────
   useEffect(() => {
-    const fetchPricingData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    fetch(`${API_BASE_URL}pricing/`)
+      .then((res) => res.json())
+      .then((data) => setCards(data.data || []))
+      .catch((err) => console.error('Error fetching pricing cards:', err));
 
-        // 1. Pricing Cards
-        const cardsRes = await fetch(`${API_BASE_URL}pricing/`);
-        if (!cardsRes.ok) throw new Error(`Pricing fetch failed: ${cardsRes.status}`);
-        const cardsJson = await cardsRes.json();
-        const fetchedCards = cardsJson.data || cardsJson;
-        setCards(fetchedCards.filter((c: PricingCard) => c.is_active));
+    fetch(`${API_BASE_URL}pricing/video-types/`)
+      .then((res) => res.json())
+      .then((data) => setVideoTypesList(data.data || []))
+      .catch((err) => console.error('Error fetching video types:', err));
+  }, []);
 
-        // 2. Video Types (only needed for custom plan)
-        const typesRes = await fetch(`${API_BASE_URL}pricing/video-types/`);
-        if (!typesRes.ok) throw new Error(`Video types fetch failed: ${typesRes.status}`);
-        const typesJson = await typesRes.json();
-        const fetchedTypes = typesJson.data || typesJson;
-        setVideoTypes(fetchedTypes.filter((t: VideoType) => t.is_active));
-
-      } catch (err: any) {
-        console.error('Pricing data fetch error:', err);
-        setError('Failed to load pricing plans');
-      } finally {
-        setLoading(false);
-      }
+  useEffect(() => {
+    if (selectedPlan) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
     };
+  }, [selectedPlan]);
 
-    fetchPricingData();
-  }, []);
-
-  // ─── Fade-in animation observer ────────────────────────────────
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.2, rootMargin: '0px 0px -50px 0px' }
-    );
-
-    const elements = sectionRef.current?.querySelectorAll('.fade-up');
-    elements?.forEach((el) => observer.observe(el));
-
-    return () => observer.disconnect();
-  }, []);
-
-  // ─── Toggle video type (for custom plan) ───────────────────────
-  const handleVideoTypeToggle = (typeId: number) => {
+  const handleVideoTypeToggle = (videoId: string) => {
     setFormData((prev) => ({
       ...prev,
-      selected_video_types: prev.selected_video_types.includes(typeId)
-        ? prev.selected_video_types.filter((id) => id !== typeId)
-        : [...prev.selected_video_types, typeId],
+      videoTypes: prev.videoTypes.includes(videoId)
+        ? prev.videoTypes.filter((id) => id !== videoId)
+        : [...prev.videoTypes, videoId],
     }));
   };
 
-  // ─── Calculate total for custom order preview ──────────────────
   const calculateTotal = () => {
-    return formData.selected_video_types.reduce((sum, id) => {
-      const vt = videoTypes.find((v) => v.id === id);
-      return sum + (vt?.price || 0);
+    return formData.videoTypes.reduce((total, videoId) => {
+      const video = videoTypesList.find((v) => v.id.toString() === videoId);
+      return total + (video?.price || 0);
     }, 0);
   };
 
-  // ─── Submit lead to backend ────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setSubmitError(null);
+    if (!selectedPlan) return;
+
+    const payload: Record<string, unknown> = {
+      name: formData.personalName,
+      company_name: formData.companyName,
+      phone: formData.phone,
+      email: formData.email,
+      selected_plan: selectedPlan.card_type,
+      date: new Date().toISOString(),
+    };
+
+    if (selectedPlan.card_type === 'custom') {
+      payload.video_type_ids = formData.videoTypes.map((id) => parseInt(id, 10));
+    }
 
     try {
-      const payload = {
-        name: formData.name.trim(),
-        company_name: formData.company_name.trim(),
-        phone: formData.phone.trim(),
-        email: formData.email.trim(),
-        selected_plan: selectedPlan,
-        selected_video_types: selectedPlan === 'custom' ? formData.selected_video_types : [],
-      };
-
       const res = await fetch(`${API_BASE_URL}leads/submit/`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
+      const result = await res.json();
+      if (res.ok) {
+        setIsSubmitted(true);
 
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || `Server error: ${res.status}`);
+        // ── Meta Pixel: track lead with plan details ──
+        if (typeof window !== 'undefined' && (window as any).fbq) {
+          (window as any).fbq('track', 'Lead', {
+            content_name: selectedPlan.heading,
+            content_category: selectedPlan.card_type,
+          });
+        }
+      } else {
+        console.error('Submit failed:', result);
       }
-
-      setIsSubmitted(true);
-    } catch (err: any) {
-      console.error('Lead submission failed:', err);
-      setSubmitError(err.message || 'Failed to submit. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+    } catch (err) {
+      console.error('Submit failed:', err);
     }
   };
 
   const closeModal = () => {
     setSelectedPlan(null);
     setIsSubmitted(false);
-    setSubmitError(null);
-    setFormData({
-      name: '',
-      company_name: '',
-      phone: '',
-      email: '',
-      selected_video_types: [],
-    });
+    setFormData({ personalName: '', companyName: '', phone: '', email: '', videoTypes: [] });
   };
-
-  // ─── Render ─────────────────────────────────────────────────────
-  if (loading) {
-    return (
-      <section className="py-24 text-center text-gray-400 bg-[#222120]">
-        Loading pricing plans...
-      </section>
-    );
-  }
-
-  if (error || cards.length === 0) {
-    return (
-      <section className="py-24 text-center text-red-400 bg-[#222120]">
-        {error || 'No pricing plans available at the moment.'}
-      </section>
-    );
-  }
 
   return (
     <>
-      <section ref={sectionRef} id="pricing" className="py-24 bg-[#222120]">
-        <div className="container-custom max-w-7xl mx-auto px-6">
-          {/* Header */}
+      <style>{`
+        .pc-card {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .pc-card:hover {
+          border-color: #CDFF00 !important;
+          box-shadow: 0 0 0 1px #CDFF00, 0 0 18px 2px rgba(205, 255, 0, 0.2);
+        }
+        .pc-card-body {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+        }
+        .pc-features { flex: 1; }
+        .pc-btn-wrap { margin-top: auto; padding-top: 20px; }
+
+        .pc-backdrop {
+          position: fixed;
+          inset: 0;
+          z-index: 50;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: calc(72px + 12px) 16px 16px;
+          background: rgba(22, 21, 20, 0.88);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          overflow: hidden;
+        }
+
+        .pc-modal {
+          position: relative;
+          width: 100%;
+          max-width: 520px;
+          max-height: 100%;
+          background: #363432;
+          border-radius: 20px;
+          border: 1px solid rgba(255,255,255,0.08);
+          box-shadow: 0 24px 64px rgba(0,0,0,0.65);
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+
+        .pc-modal-hdr {
+          position: relative;
+          flex-shrink: 0;
+          padding: 20px 52px 0 28px;
+        }
+
+        .pc-close {
+          position: absolute;
+          top: 14px;
+          right: 14px;
+          width: 34px;
+          height: 34px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.08);
+          border: none;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #F3F3F2;
+          transition: background 0.2s, color 0.2s, transform 0.25s;
+          flex-shrink: 0;
+          z-index: 5;
+        }
+        .pc-close:hover {
+          background: #CDFF00;
+          color: #1a1918;
+          transform: rotate(90deg);
+        }
+
+        .pc-modal-body {
+          flex: 1;
+          overflow-y: auto;
+          overflow-x: hidden;
+          padding: 16px 28px 28px;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(205,255,0,0.25) transparent;
+        }
+        .pc-modal-body::-webkit-scrollbar { width: 4px; }
+        .pc-modal-body::-webkit-scrollbar-track { background: transparent; }
+        .pc-modal-body::-webkit-scrollbar-thumb {
+          background: rgba(205,255,0,0.25);
+          border-radius: 4px;
+        }
+      `}</style>
+
+      <section id="pricing" className="section-padding bg-[#222120]">
+        <div className="container-custom">
           <div className="text-center mb-16">
-            <h2 className="fade-up font-serif text-3xl md:text-5xl text-[#F3F3F2] font-bold mb-4">
+            <h2 className="font-serif text-3xl md:text-5xl text-[#F3F3F2] font-bold mb-4">
               Transparent <span className="text-[#CDFF00]">Pricing</span>
             </h2>
-            <p className="fade-up text-[#DADADA] text-lg max-w-3xl mx-auto">
-              Turnaround time = 7-8 Working Days · Multiple videos from one wedding? Volume pricing applies automatically
+            <p className="text-[#DADADA] text-lg">
+              Turnaround time = 7–8 Working Days · Multiple videos from one wedding? Volume pricing applies automatically
             </p>
           </div>
 
-          {/* Pricing Cards */}
-          <div className="flex flex-col md:flex-row gap-6 md:gap-8 max-w-6xl mx-auto items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto items-stretch pt-4">
             {cards.map((card) => (
               <div
                 key={card.id}
-                className={`fade-up flex-1 flex flex-col bg-[#363432]/50 border ${
-                  card.is_most_popular ? 'border-[#CDFF00]/40 shadow-lg shadow-[#CDFF00]/10' : 'border-[#4A4845]'
-                } rounded-xl p-6 md:p-8 relative min-h-[520px] md:min-h-[560px] transition-all hover:border-[#CDFF00]/30`}
+                className="pc-card bg-card/50 border border-border/50 rounded-lg p-6 relative overflow-visible"
               >
                 {card.is_most_popular && (
-                  <div className="absolute -top-3 left-6 px-4 py-1 bg-[#CDFF00] text-[#222120] text-xs font-bold rounded-full shadow-md">
-                    MOST POPULAR
-                  </div>
+                  <span className="absolute -top-3 left-6 px-3 py-1 bg-[#CDFF00] text-[#1a1918] text-xs font-semibold rounded-full">
+                    Most Popular
+                  </span>
                 )}
 
-                <h3 className="font-display font-bold text-2xl text-[#F3F3F2] mt-8 mb-2">
-                  {card.heading}
-                </h3>
-
-                {card.subheading && (
-                  <p className="text-[#DADADA] text-sm mb-4">{card.subheading}</p>
-                )}
-
-                {card.price !== undefined && card.price !== null ? (
-                  <div className="flex items-baseline gap-2 mb-6">
-                    <span className="text-4xl md:text-5xl font-bold text-[#F3F3F2]">
-                      {typeof card.price === 'number' ? `$${card.price}` : card.price}
-                    </span>
+                <div className="pc-card-body">
+                  <div className="pc-features">
+                    <h3 className="text-xl font-bold text-[#F3F3F2]">{card.heading}</h3>
+                    {card.subheading && (
+                      <p className="text-sm text-muted-foreground mb-4">{card.subheading}</p>
+                    )}
+                    {card.features && card.features.length > 0 && (
+                      <ul className="space-y-2 mb-2">
+                        {card.features.map((f, i) => (
+                          <li key={i} className="flex items-start gap-2 text-sm">
+                            <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                            {f}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
-                ) : (
-                  <div className="text-4xl md:text-5xl font-bold text-[#F3F3F2] mb-6">
-                    Contact Us
+
+                  <div className="pc-btn-wrap">
+                    <button
+                      onClick={() => setSelectedPlan(card)}
+                      className="w-full py-3 border border-primary/40 text-primary rounded-md hover:bg-primary/10 transition-colors"
+                    >
+                      {card.button_label}
+                    </button>
                   </div>
-                )}
-
-                <ul className="space-y-3 mb-8 flex-grow">
-                  {card.features.map((f) => (
-                    <li key={f.id || f.text} className="flex items-center gap-3 text-[#DADADA] text-base">
-                      <Check className="w-5 h-5 text-[#CDFF00] flex-shrink-0" />
-                      {f.text}
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="mt-auto">
-                  <button
-                    onClick={() => setSelectedPlan(card.card_type)}
-                    className={`w-full py-4 px-6 font-semibold rounded-xl transition-all text-lg ${
-                      card.is_most_popular
-                        ? 'bg-[#CDFF00] text-[#222120] hover:bg-[#b8e600] shadow-lg shadow-[#CDFF00]/20'
-                        : card.card_type === 'custom'
-                        ? 'border-2 border-[#CDFF00]/60 text-[#CDFF00] hover:bg-[#CDFF00]/10'
-                        : 'border-2 border-[#F3F3F2]/30 text-[#F3F3F2] hover:bg-[#F3F3F2]/10'
-                    }`}
-                  >
-                    {card.button_label || 'Choose Plan'} →
-                  </button>
                 </div>
               </div>
             ))}
@@ -277,175 +277,112 @@ export function Pricing() {
         </div>
       </section>
 
-      {/* ─── Inquiry Modal ───────────────────────────────────────────── */}
       {selectedPlan && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
-          onClick={closeModal}
-        >
-          <div
-            className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-[#363432] rounded-2xl p-6 md:p-8 border border-[#4A4845]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={closeModal}
-              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-[#4A4845] text-[#DADADA] flex items-center justify-center hover:bg-[#CDFF00] hover:text-[#222120] transition-colors"
-            >
-              <X className="w-5 h-5" />
+        <div className="pc-backdrop" onClick={closeModal}>
+          <div className="pc-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="pc-close" onClick={closeModal} aria-label="Close">
+              <X className="w-4 h-4" />
             </button>
 
             {isSubmitted ? (
-              <div className="text-center py-12">
-                <div className="w-20 h-20 rounded-full bg-[#CDFF00] flex items-center justify-center mx-auto mb-6">
-                  <Check className="w-10 h-10 text-[#222120]" />
-                </div>
-                <h3 className="font-serif text-3xl text-[#F3F3F2] mb-4">Thank You!</h3>
-                <p className="text-[#DADADA] text-lg mb-8">
-                  Your inquiry has been received. We'll contact you within 24 hours via WhatsApp or email.
+              <div className="pc-modal-body flex flex-col items-center justify-center text-center py-10">
+                <Check className="w-10 h-10 text-primary mb-4" />
+                <h3 className="text-2xl text-[#F3F3F2] mb-2 font-semibold">Thank You!</h3>
+                <p className="text-[#DADADA] mb-6">
+                  We've received your inquiry. Our team will contact you shortly.
                 </p>
                 <button
                   onClick={closeModal}
-                  className="px-8 py-3 bg-[#CDFF00] text-[#222120] font-semibold rounded-xl hover:bg-[#b8e600] transition-colors"
+                  className="px-6 py-2 bg-primary text-[#222120] rounded-lg font-medium hover:bg-primary/90 transition-colors"
                 >
                   Close
                 </button>
               </div>
             ) : (
               <>
-                <h3 className="font-serif text-3xl text-[#F3F3F2] mb-2">
-                  {selectedPlan === 'bundle' && 'Order The Wedding Bundle'}
-                  {selectedPlan === 'custom' && 'Build Your Custom Package'}
-                  {selectedPlan === 'dedicated' && 'Book Your Dedicated Editor'}
-                </h3>
-
-                <p className="text-[#DADADA] mb-6">
-                  Please fill in your details below. We'll get back to you shortly.
-                </p>
-
-                {submitError && (
-                  <div className="mb-6 p-4 bg-red-900/40 border border-red-500/50 rounded-xl text-red-300">
-                    {submitError}
-                  </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  <div>
-                    <label className="block text-[#F3F3F2] text-sm mb-2 font-medium">Full Name *</label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.name}
-                      onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
-                      className="w-full px-5 py-3.5 bg-[#2E2C3A] border border-[#4A4845] rounded-xl text-[#F3F3F2] placeholder-[#8A8885] focus:border-[#CDFF00] focus:ring-2 focus:ring-[#CDFF00]/30 outline-none transition-all"
-                      placeholder="Your full name"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[#F3F3F2] text-sm mb-2 font-medium">Company / Studio Name</label>
-                    <input
-                      type="text"
-                      value={formData.company_name}
-                      onChange={(e) => setFormData((p) => ({ ...p, company_name: e.target.value }))}
-                      className="w-full px-5 py-3.5 bg-[#2E2C3A] border border-[#4A4845] rounded-xl text-[#F3F3F2] placeholder-[#8A8885] focus:border-[#CDFF00] focus:ring-2 focus:ring-[#CDFF00]/30 outline-none transition-all"
-                      placeholder="Your company or studio"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[#F3F3F2] text-sm mb-2 font-medium">Phone / WhatsApp *</label>
-                    <input
-                      type="tel"
-                      required
-                      value={formData.phone}
-                      onChange={(e) => setFormData((p) => ({ ...p, phone: e.target.value }))}
-                      className="w-full px-5 py-3.5 bg-[#2E2C3A] border border-[#4A4845] rounded-xl text-[#F3F3F2] placeholder-[#8A8885] focus:border-[#CDFF00] focus:ring-2 focus:ring-[#CDFF00]/30 outline-none transition-all"
-                      placeholder="+44 1234 567890"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[#F3F3F2] text-sm mb-2 font-medium">Email Address *</label>
-                    <input
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))}
-                      className="w-full px-5 py-3.5 bg-[#2E2C3A] border border-[#4A4845] rounded-xl text-[#F3F3F2] placeholder-[#8A8885] focus:border-[#CDFF00] focus:ring-2 focus:ring-[#CDFF00]/30 outline-none transition-all"
-                      placeholder="your@email.com"
-                    />
-                  </div>
-
-                  {selectedPlan === 'custom' && (
-                    <div className="pt-2">
-                      <label className="block text-[#F3F3F2] text-sm mb-3 font-medium">Select Desired Video Types</label>
-                      <div className="space-y-3">
-                        {videoTypes.map((vt) => (
-                          <label
-                            key={vt.id}
-                            className="flex items-center justify-between p-4 bg-[#2E2C3A] rounded-xl cursor-pointer hover:bg-[#3A3845] transition-colors border border-[#4A4845]/50"
-                          >
-                            <div className="flex items-center gap-3">
-                              <input
-                                type="checkbox"
-                                checked={formData.selected_video_types.includes(vt.id)}
-                                onChange={() => handleVideoTypeToggle(vt.id)}
-                                className="w-5 h-5 rounded border-[#5a5855] text-[#CDFF00] focus:ring-[#CDFF00] bg-[#222120]"
-                              />
-                              <span className="text-[#F3F3F2]">{vt.name}</span>
-                            </div>
-                            <span className="text-[#CDFF00] font-medium">${vt.price}</span>
-                          </label>
-                        ))}
-                      </div>
-
-                      {formData.selected_video_types.length > 0 && (
-                        <div className="mt-5 p-5 bg-[#222120] rounded-xl border border-[#4A4845]/50">
-                          <div className="flex justify-between items-center text-lg">
-                            <span className="text-[#DADADA]">Estimated Total:</span>
-                            <span className="text-[#CDFF00] font-bold text-2xl">
-                              ${calculateTotal()}
-                            </span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                <div className="pc-modal-hdr">
+                  <h3 className="text-2xl font-bold text-[#F3F3F2]">{selectedPlan.heading}</h3>
+                  {selectedPlan.subheading && (
+                    <p className="text-sm text-muted-foreground mt-1 mb-0">{selectedPlan.subheading}</p>
                   )}
+                </div>
 
-                  {selectedPlan === 'dedicated' && (
-                    <div className="p-5 bg-[#222120] rounded-xl border border-[#4A4845]/50">
-                      <div className="flex items-start gap-4">
-                        <Calendar className="w-6 h-6 text-[#CDFF00] mt-1 flex-shrink-0" />
-                        <div>
-                          <p className="text-[#F3F3F2] font-medium mb-2">Book a Discovery Call</p>
-                          <p className="text-[#DADADA] text-sm">
-                            We'll arrange a quick call to understand your needs and tailor the perfect editing solution.
+                <div className="pc-modal-body">
+                  <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+                    {selectedPlan.card_type === 'custom' && videoTypesList.length > 0 && (
+                      <div>
+                        <label className="block text-[#F3F3F2] font-medium mb-2 text-sm">
+                          Select Video Types
+                        </label>
+                        <div className="flex flex-col gap-2">
+                          {videoTypesList.map((video) => (
+                            <label
+                              key={video.id}
+                              className="flex justify-between items-center p-3 bg-[#4A4845] rounded-lg cursor-pointer hover:bg-[#525050] transition-colors"
+                            >
+                              <span className="text-[#F3F3F2] font-medium text-sm">{video.name}</span>
+                              <div className="flex items-center gap-3 flex-shrink-0">
+                                <span className="text-[#CDFF00] font-semibold text-sm">${video.price}</span>
+                                <input
+                                  type="checkbox"
+                                  checked={formData.videoTypes.includes(video.id.toString())}
+                                  onChange={() => handleVideoTypeToggle(video.id.toString())}
+                                  className="w-4 h-4 accent-[#CDFF00] cursor-pointer"
+                                />
+                              </div>
+                            </label>
+                          ))}
+                        </div>
+                        {formData.videoTypes.length > 0 && (
+                          <p className="mt-3 text-sm font-semibold text-[#CDFF00] text-right">
+                            Total Estimate: ${calculateTotal()}
                           </p>
-                        </div>
+                        )}
                       </div>
+                    )}
+
+                    <div className="space-y-3">
+                      <input
+                        type="text"
+                        placeholder="Personal Name *"
+                        required
+                        value={formData.personalName}
+                        onChange={(e) => setFormData({ ...formData, personalName: e.target.value })}
+                        className="w-full p-3 rounded-xl bg-[#4A4845] text-[#F3F3F2] placeholder:text-[#9a9896] focus:outline-none focus:ring-2 focus:ring-primary transition"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Company Name"
+                        value={formData.companyName}
+                        onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                        className="w-full p-3 rounded-xl bg-[#4A4845] text-[#F3F3F2] placeholder:text-[#9a9896] focus:outline-none focus:ring-2 focus:ring-primary transition"
+                      />
+                      <input
+                        type="tel"
+                        placeholder="Phone *"
+                        required
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        className="w-full p-3 rounded-xl bg-[#4A4845] text-[#F3F3F2] placeholder:text-[#9a9896] focus:outline-none focus:ring-2 focus:ring-primary transition"
+                      />
+                      <input
+                        type="email"
+                        placeholder="Email *"
+                        required
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="w-full p-3 rounded-xl bg-[#4A4845] text-[#F3F3F2] placeholder:text-[#9a9896] focus:outline-none focus:ring-2 focus:ring-primary transition"
+                      />
                     </div>
-                  )}
 
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className={`w-full py-4 px-8 mt-2 rounded-xl font-semibold text-lg transition-all ${
-                      isSubmitting
-                        ? 'bg-gray-600 text-gray-300 cursor-not-allowed'
-                        : 'bg-[#CDFF00] text-[#222120] hover:bg-[#b8e600] shadow-lg shadow-[#CDFF00]/20'
-                    }`}
-                  >
-                    {isSubmitting
-                      ? 'Submitting...'
-                      : selectedPlan === 'dedicated'
-                      ? 'Book Discovery Call'
-                      : 'Submit Your Inquiry'}
-                  </button>
-
-                  <p className="text-center text-[#8A8885] text-sm mt-4">
-                    We'll reach out via WhatsApp or email within 24 hours.
-                  </p>
-                </form>
+                    <button
+                      type="submit"
+                      className="w-full py-3 bg-primary text-[#222120] rounded-xl font-semibold hover:bg-primary/90 transition-colors"
+                    >
+                      Submit Inquiry
+                    </button>
+                  </form>
+                </div>
               </>
             )}
           </div>

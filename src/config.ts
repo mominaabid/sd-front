@@ -66,12 +66,12 @@ export const navigationConfig: NavigationConfig = {
 // -----------------------------------------------------------------------------
 // Preloader Config
 // -----------------------------------------------------------------------------
-export interface PreloaderConfig {
+export type PreloaderConfig = {
   brandName: string;
-  brandHighlight: string;
-  tagline: string;
-  yearText: string;
-}
+  brandHighlight?: string;
+  tagline?: string; // add this
+  yearText?: string;
+};
 
 export const preloaderConfig: PreloaderConfig = {
   brandName: "S&D",
@@ -106,7 +106,7 @@ export interface HeroConfig {
 
 export const heroConfig: HeroConfig = {
   scriptText: "WEDDING VIDEO EDITING",
-  mainTitle: "Wedding Films That\nMove People.",
+  mainTitle: "Wedding Films That Move\nPeople.",
   subtitle: "Delivered On Time. Every Time.",
   description:
     "Professional post-production partner for wedding videographers — cinematic quality, fast turnaround, zero missed deadlines.",
@@ -120,8 +120,10 @@ export const heroConfig: HeroConfig = {
     { value: 98, suffix: "%", label: "Client Satisfaction" },
   ],
   decorativeText: "CINEMATIC · EMOTIONAL · TIMELESS",
-  videoPoster: "https://images.unsplash.com/photo-1519741497674-611481863552?w=1920&q=80",
-  videoSrc: "https://assets.mixkit.co/videos/preview/mixkit-wedding-couple-in-a-romantic-sunset-scene-34374-large.mp4",
+
+  // Your local video
+  videoPoster: "/couple.jpg", // updated poster image
+  videoSrc: "/77929-564459462_tiny.mp4",
 };
 
 // -----------------------------------------------------------------------------

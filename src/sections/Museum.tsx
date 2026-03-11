@@ -78,7 +78,7 @@ export function Museum() {
           <Icon className="w-5 h-5 text-primary" />
         </div>
 
-        <h3 className="text-lg font-display font-semibold mb-1 uppercase tracking-wide text-sm">
+        <h3 className="text-lg font-display font-semibold mb-1 uppercase tracking-wide">
           {feature.title}
         </h3>
 

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { builtForConfig } from '../config';
-import { Clock, Sparkles, Flame, Shield, Quote } from 'lucide-react';
+import { Clock, Sparkles, Flame, Shield } from 'lucide-react';
 
 const iconMap: Record<string, React.ElementType> = {
   'Time Saving': Clock,

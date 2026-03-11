@@ -22,6 +22,8 @@ export function VideoTestimonials() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Controls the whole-section fade-in — separate from card positioning
+  const [sectionVisible, setSectionVisible] = useState(false);
 
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -31,14 +33,10 @@ export function VideoTestimonials() {
       try {
         setLoading(true);
         setError(null);
-
         const res = await fetch(`${API_BASE_URL}testimonials/`);
         if (!res.ok) throw new Error(`Failed to fetch testimonials: ${res.status}`);
-
         const json = await res.json();
-        const fetched = json.data || json;
-
-        setTestimonials(fetched);
+        setTestimonials(json.data || json);
       } catch (err) {
         console.error('Testimonials fetch error:', err);
         setError('Could not load video testimonials');
@@ -46,52 +44,52 @@ export function VideoTestimonials() {
         setLoading(false);
       }
     };
-
     fetchTestimonials();
   }, []);
 
-  // ─── Improved fade-in observer + force visible ─────────────────
+  // ─── Section fade-in (whole section as one unit, not per-card) ─
   useEffect(() => {
+    if (loading) return; // wait until data is loaded before observing
+
+    const el = sectionRef.current;
+    if (!el) return;
+
+    // If already in viewport (e.g. section is near top), show immediately
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight) {
+      requestAnimationFrame(() => setTimeout(() => setSectionVisible(true), 16));
+      return;
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
+            requestAnimationFrame(() => setTimeout(() => setSectionVisible(true), 16));
             observer.unobserve(entry.target);
           }
         });
       },
-      {
-        threshold: 0.1,
-        rootMargin: '0px 0px -100px 0px',
-      }
+      { threshold: 0.05, rootMargin: '0px 0px -20px 0px' }
     );
 
-    // Query all .test-fade (document-wide fallback)
-    const elements = document.querySelectorAll('.test-fade');
-    elements.forEach((el) => observer.observe(el));
+    observer.observe(el);
 
-    // Force visible check after mount (handles sections off-screen on load)
-    setTimeout(() => {
-      document.querySelectorAll('.test-fade').forEach((el) => {
-        const rect = el.getBoundingClientRect();
-        if (rect.top < window.innerHeight && rect.bottom > 0) {
-          el.classList.add('visible');
-        }
-      });
-    }, 800);
+    // Hard fallback — always show after 1s even if observer never fires
+    const fallback = setTimeout(() => setSectionVisible(true), 1000);
 
-    return () => observer.disconnect();
-  }, [testimonials, loading]); // re-run when data changes
+    return () => {
+      observer.disconnect();
+      clearTimeout(fallback);
+    };
+  }, [loading]); // re-run once loading completes
 
   // ─── Auto-rotate carousel ──────────────────────────────────────
   useEffect(() => {
     if (selectedIndex !== null || testimonials.length === 0) return;
-
     const interval = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % testimonials.length);
     }, 4000);
-
     return () => clearInterval(interval);
   }, [selectedIndex, testimonials.length]);
 
@@ -104,35 +102,33 @@ export function VideoTestimonials() {
     return () => window.removeEventListener('keydown', handleEscape);
   }, []);
 
-  const handlePrev = () => {
+  const handlePrev = () =>
     setActiveIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
-  };
 
-  const handleNext = () => {
+  const handleNext = () =>
     setActiveIndex((prev) => (prev + 1) % testimonials.length);
-  };
 
-  const goToPrevVideo = () => {
+  const goToPrevVideo = () =>
     setSelectedIndex((prev) =>
       prev === null ? null : (prev - 1 + testimonials.length) % testimonials.length
     );
-  };
 
-  const goToNextVideo = () => {
+  const goToNextVideo = () =>
     setSelectedIndex((prev) =>
       prev === null ? null : (prev + 1) % testimonials.length
     );
-  };
 
+  // ─── Position calculation for 3-card loop ─────────────────────
   const getPosition = (index: number) => {
-    const diff = (index - activeIndex + testimonials.length) % testimonials.length;
+    const total = testimonials.length;
+    const diff = (index - activeIndex + total) % total;
     if (diff === 0) return 'center';
-    if (diff === 1 || diff === -(testimonials.length - 1)) return 'right';
-    if (diff === testimonials.length - 1 || diff === -1) return 'left';
+    if (diff === 1 || diff === total - 2) return 'right';
+    if (diff === total - 1) return 'left';
     return 'hidden';
   };
 
-  // ─── Render ─────────────────────────────────────────────────────
+  // ─── Render ───────────────────────────────────────────────────
   if (loading) {
     return (
       <section className="py-24 text-center text-gray-400 bg-[#363432] min-h-[60vh] flex items-center justify-center">
@@ -152,142 +148,149 @@ export function VideoTestimonials() {
   return (
     <>
       <style>{`
-        .test-fade {
+        /* ── Section entrance — the WHOLE section fades in as one unit ── */
+        .vt-section {
           opacity: 0;
-          transform: translateY(40px);
-          transition: opacity 0.9s ease-out, transform 0.9s ease-out;
+          transform: translateY(28px) translateZ(0);
+          transition:
+            opacity   0.9s cubic-bezier(0.16, 1, 0.3, 1),
+            transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+          will-change: opacity, transform;
+          backface-visibility: hidden;
+          /* Safety net: always become visible after 1.2s regardless of observer */
+          animation: vtFallback 0s linear 1.2s forwards;
         }
-        .test-fade.visible {
+        @keyframes vtFallback {
+          to { opacity: 1; transform: translateY(0) translateZ(0); }
+        }
+        .vt-section.vt-visible {
           opacity: 1;
-          transform: translateY(0);
+          transform: translateY(0) translateZ(0);
+          animation: none;
         }
 
+        /* ── Individual cards: NO opacity/transform animation here ──
+           They are always fully visible once the section is visible.
+           Only their POSITION transitions are animated.               */
         .reel-card {
-          transition: all 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
           position: absolute;
           transform-origin: center center;
+          /* Smooth position/scale/filter transitions only */
+          transition:
+            left      0.65s cubic-bezier(0.16, 1, 0.3, 1),
+            width     0.65s cubic-bezier(0.16, 1, 0.3, 1),
+            height    0.65s cubic-bezier(0.16, 1, 0.3, 1),
+            transform 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+            filter    0.65s cubic-bezier(0.16, 1, 0.3, 1),
+            opacity   0.65s cubic-bezier(0.16, 1, 0.3, 1),
+            top       0.65s cubic-bezier(0.16, 1, 0.3, 1),
+            z-index   0s;
+          will-change: transform, filter, opacity;
+          backface-visibility: hidden;
         }
 
+        /* ── Center card ── */
         .reel-center {
           width: 240px;
           height: 400px;
-          transform: translateX(-50%) scale(1);
           left: 50%;
+          top: 20px;
+          transform: translateX(-50%) translateZ(0);
           z-index: 10;
           filter: none;
           opacity: 1;
         }
 
+        /* ── Side cards ── */
         .reel-left,
         .reel-right {
           width: 180px;
           height: 320px;
-          transform: translateX(-50%) scale(0.88);
+          top: 60px;
+          transform: translateX(-50%) scale(0.88) translateZ(0);
           z-index: 5;
-          filter: blur(2px) brightness(0.7);
-          opacity: 0.8;
+          filter: blur(1.5px) brightness(0.65);
+          opacity: 0.75;
         }
-
-        .reel-left { left: calc(50% - 220px); }
+        .reel-left  { left: calc(50% - 220px); }
         .reel-right { left: calc(50% + 220px); }
 
+        /* ── Hidden cards ── */
         .reel-hidden {
           opacity: 0;
           pointer-events: none;
           visibility: hidden;
+          left: 50%;
+          transform: translateX(-50%) scale(0.7) translateZ(0);
         }
 
+        /* ── Mobile ── */
         @media (max-width: 640px) {
-          .reel-center { width: 180px; height: 320px; }
-          .reel-left { left: calc(50% - 170px); width: 140px; height: 250px; }
-          .reel-right { left: calc(50% + 170px); width: 140px; height: 250px; }
+          .reel-center {
+            width: 180px;
+            height: 320px;
+          }
+          .reel-left {
+            left: calc(50% - 160px);
+            width: 130px;
+            height: 240px;
+          }
+          .reel-right {
+            left: calc(50% + 160px);
+            width: 130px;
+            height: 240px;
+          }
         }
 
-        .popup-nav {
-          position: absolute;
-          top: 50%;
-          transform: translateY(-50%);
-          z-index: 60;
-          width: 50px;
-          height: 50px;
-          background: rgba(34, 33, 32, 0.75);
-          backdrop-filter: blur(10px);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          cursor: pointer;
-          transition: all 0.3s ease;
-        }
-
-        .popup-nav:hover {
-          background: #CDFF00;
-          color: #222120;
-          transform: translateY(-50%) scale(1.15);
-        }
-
-        .popup-nav-left  { left: 20px; }
-        .popup-nav-right { right: 20px; }
-
-        @media (min-width: 640px) {
-          .popup-nav { width: 60px; height: 60px; }
-          .popup-nav-left  { left: 40px; }
-          .popup-nav-right { right: 40px; }
+        @media (max-width: 400px) {
+          .reel-center { width: 150px; height: 270px; }
+          .reel-left  { left: calc(50% - 130px); width: 110px; height: 200px; }
+          .reel-right { left: calc(50% + 130px); width: 110px; height: 200px; }
         }
       `}</style>
 
       <section
         ref={sectionRef}
-        className="py-24 relative overflow-hidden bg-gradient-to-br from-[#1a1918] via-[#2a2826] to-[#363432] min-h-[80vh] relative z-10"
+        className={`vt-section${sectionVisible ? ' vt-visible' : ''} py-24 relative overflow-hidden bg-gradient-to-br from-[#1a1918] via-[#2a2826] to-[#363432] min-h-[80vh] z-10`}
       >
-        {/* Lime glow */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: 'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(205,255,0,0.06) 0%, transparent 70%)',
-          }}
-        />
-
         <div className="container mx-auto px-6 relative z-10">
-          {/* Header */}
-          <div className="test-fade text-center mb-16">
+
+          {/* Heading */}
+          <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-display font-bold mb-4 text-white">
               Video <span className="text-[#CDFF00]">Testimonials</span>
             </h2>
           </div>
 
           {/* Carousel */}
-          <div className="test-fade relative" style={{ height: '440px' }}>
-            {/* Arrows */}
+          <div className="relative" style={{ height: '440px' }}>
+
+            {/* Prev button */}
             <button
               onClick={handlePrev}
               className="absolute left-4 md:left-10 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-[#CDFF00] hover:text-black transition-all shadow-lg"
-              aria-label="Previous"
             >
               <ChevronLeft className="w-7 h-7" />
             </button>
 
+            {/* Next button */}
             <button
               onClick={handleNext}
               className="absolute right-4 md:right-10 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-[#CDFF00] hover:text-black transition-all shadow-lg"
-              aria-label="Next"
             >
               <ChevronRight className="w-7 h-7" />
             </button>
 
-            {/* Cards */}
+            {/* Cards — always fully opaque; position/scale transitions only */}
             {testimonials.map((testimonial, index) => {
               const position = getPosition(index);
-
               return (
                 <div
                   key={testimonial.id}
-                  className={`reel-card reel-${position} test-fade`}
-                  style={{ top: position === 'center' ? '20px' : '60px' }}
+                  className={`reel-card reel-${position}`}
                   onClick={() => {
                     if (position === 'center') setSelectedIndex(index);
-                    else setActiveIndex(index);
+                    else if (position !== 'hidden') setActiveIndex(index);
                   }}
                 >
                   <div className="relative w-full h-full rounded-2xl overflow-hidden group cursor-pointer shadow-xl">
@@ -303,10 +306,8 @@ export function VideoTestimonials() {
                       </div>
                     )}
 
-                    {/* Gradient */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
-                    {/* Play button (center only) */}
                     {position === 'center' && (
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="w-16 h-16 rounded-full bg-[#CDFF00]/90 flex items-center justify-center transform scale-90 group-hover:scale-110 transition-all duration-300 shadow-2xl shadow-[#CDFF00]/30">
@@ -315,7 +316,6 @@ export function VideoTestimonials() {
                       </div>
                     )}
 
-                    {/* Info */}
                     <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/90 to-transparent">
                       <h4 className="font-display font-semibold text-white text-lg mb-1">
                         {testimonial.name}
@@ -348,7 +348,7 @@ export function VideoTestimonials() {
         </div>
       </section>
 
-      {/* ─── POPUP ───────────────────────────────────────────────────── */}
+      {/* ── Video Popup ── */}
       {selectedIndex !== null && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg"
@@ -364,38 +364,26 @@ export function VideoTestimonials() {
             >
               <X className="w-6 h-6" />
             </button>
-
             <button
               onClick={goToPrevVideo}
               className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-[#CDFF00] hover:text-black transition-all"
-              aria-label="Previous"
             >
               <ChevronLeft className="w-7 h-7" />
             </button>
-
             <button
               onClick={goToNextVideo}
               className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-[#CDFF00] hover:text-black transition-all"
-              aria-label="Next"
             >
               <ChevronRight className="w-7 h-7" />
             </button>
 
-            {/* Video or fallback */}
             {testimonials[selectedIndex].video_file || testimonials[selectedIndex].video_url ? (
               <video
                 src={testimonials[selectedIndex].video_file || testimonials[selectedIndex].video_url}
                 controls
                 autoPlay
                 className="w-full h-full object-cover"
-                onError={(e) => console.error('Video error:', e)}
-              >
-                <source
-                  src={testimonials[selectedIndex].video_file || testimonials[selectedIndex].video_url}
-                  type="video/mp4"
-                />
-                Your browser does not support video playback.
-              </video>
+              />
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 to-black text-center p-8">
                 {testimonials[selectedIndex].thumbnail && (
@@ -416,7 +404,6 @@ export function VideoTestimonials() {
               </div>
             )}
 
-            {/* Bottom info bar */}
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent px-6 py-4">
               <h3 className="font-display text-xl font-bold text-white">
                 {testimonials[selectedIndex].name}

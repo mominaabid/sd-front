@@ -15,11 +15,20 @@ interface Video {
   id: number;
   title: string;
   couple?: string;
-  thumbnail_url: string;
+  thumbnail_url?: string;
   video_url?: string;
   video_file?: string;
   category: { id: number };
 }
+
+// ─────────────────────────────────────────────────────────────
+// Helper to normalize URLs
+// ─────────────────────────────────────────────────────────────
+const getMediaUrl = (url?: string) => {
+  if (!url) return null;
+  if (url.startsWith('http')) return url;
+  return `${API_BASE_URL.replace('/api/v1/', '')}${url}`;
+};
 
 // ─────────────────────────────────────────────────────────────
 export function Portfolio() {
@@ -42,44 +51,31 @@ export function Portfolio() {
         if (!res.ok) throw new Error(`Categories fetch failed: ${res.status}`);
         const json = await res.json();
         const fetched = json.data || json;
-
-        setCategories([
-          { id: 0, name: 'All', slug: 'all' },
-          ...fetched,
-        ]);
+        setCategories([{ id: 0, name: 'All', slug: 'all' }, ...fetched]);
       } catch (err) {
         console.error('Categories fetch error:', err);
         setError('Failed to load portfolio categories');
       }
     };
-
     fetchCategories();
   }, []);
 
   // ─── Fetch videos ──────────────────────────────────────────────
   useEffect(() => {
     if (categories.length === 0) return;
-
     const fetchVideos = async () => {
       setLoading(true);
       setError(null);
-
       try {
         let url = `${API_BASE_URL}portfolio/videos/`;
         if (activeTab !== 'All') {
           const selectedCat = categories.find(c => c.name === activeTab);
-          if (selectedCat && selectedCat.id !== 0) {
-            url += `?category=${selectedCat.id}`;
-          }
+          if (selectedCat && selectedCat.id !== 0) url += `?category=${selectedCat.id}`;
         }
-
         const res = await fetch(url);
         if (!res.ok) throw new Error(`Videos fetch failed: ${res.status}`);
-
         const json = await res.json();
-        const fetchedVideos = json.data || json;
-
-        setVideos(fetchedVideos);
+        setVideos(json.data || json);
         setCurrentPage(0);
       } catch (err) {
         console.error('Videos fetch error:', err);
@@ -88,12 +84,19 @@ export function Portfolio() {
         setLoading(false);
       }
     };
-
     fetchVideos();
   }, [activeTab, categories]);
 
-  // ─── Improved Intersection Observer + force visible fallback ───
+  // ─── Pagination ────────────────────────────────────────────────
+  const totalPages = Math.ceil(videos.length / itemsPerPage);
+  const paginatedVideos = videos.slice(
+    currentPage * itemsPerPage,
+    (currentPage + 1) * itemsPerPage
+  );
+
+  // ─── Intersection Observer ─────────────────────────────────────
   useEffect(() => {
+    const elements = document.querySelectorAll('.port-fade');
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -103,66 +106,150 @@ export function Portfolio() {
           }
         });
       },
-      {
-        threshold: 0.1,
-        rootMargin: '0px 0px -100px 0px', // trigger earlier
-      }
+      { threshold: 0.1, rootMargin: '0px 0px -100px 0px' }
     );
-
-    // Query all .port-fade in document (safer than ref-only)
-    const elements = document.querySelectorAll('.port-fade');
-    elements.forEach((el) => observer.observe(el));
-
-    // Force visible for elements already in view after mount
-    setTimeout(() => {
-      document.querySelectorAll('.port-fade').forEach((el) => {
-        const rect = el.getBoundingClientRect();
-        if (rect.top < window.innerHeight && rect.bottom > 0) {
-          el.classList.add('visible');
-        }
-      });
-    }, 800); // slight delay after data loads
-
+    elements.forEach((el) => { el.classList.remove('visible'); observer.observe(el); });
     return () => observer.disconnect();
-  }, [videos, categories, loading]); // re-run when content changes
+  }, [paginatedVideos]);
 
   // ─── Escape to close modal ─────────────────────────────────────
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setSelectedVideo(null);
-    };
+    const handleEscape = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelectedVideo(null); };
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
   }, []);
 
-  // ─── Pagination ────────────────────────────────────────────────
-  const totalPages = Math.ceil(videos.length / itemsPerPage);
-  const paginatedVideos = videos.slice(
-    currentPage * itemsPerPage,
-    (currentPage + 1) * itemsPerPage
-  );
+  // ─── Page number pills to show ────────────────────────────────
+  const getPageRange = () => {
+    if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i);
+    if (currentPage <= 2) return [0, 1, 2, 3, '...', totalPages - 1];
+    if (currentPage >= totalPages - 3) return [0, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1];
+    return [0, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages - 1];
+  };
 
-  // ─── Render ─────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────
   return (
     <>
       <style>{`
         .port-fade {
           opacity: 0;
-          transform: translateY(40px);
-          transition: opacity 0.9s ease-out, transform 0.9s ease-out;
+          transform: translateY(32px);
+          transition: opacity 0.85s ease-out, transform 0.85s ease-out;
         }
         .port-fade.visible {
           opacity: 1;
           transform: translateY(0);
+        }
+
+        /* ── Pagination ── */
+        .pagination {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          margin-top: 48px;
+          flex-wrap: wrap;
+          padding: 0 12px;
+        }
+
+        /* Prev / Next */
+        .page-nav {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          height: 42px;
+          padding: 0 18px;
+          border-radius: 10px;
+          border: 1px solid rgba(74,72,69,0.8);
+          color: rgba(240,237,232,0.65);
+          background: transparent;
+          font-size: 0.85rem;
+          font-weight: 500;
+          letter-spacing: 0.2px;
+          cursor: pointer;
+          transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.2s, box-shadow 0.2s;
+          white-space: nowrap;
+          user-select: none;
+        }
+        .page-nav:not(:disabled):hover {
+          border-color: #CDFF00;
+          color: #fff;
+          background: rgba(205,255,0,0.06);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 16px rgba(205,255,0,0.12);
+        }
+        .page-nav:disabled {
+          opacity: 0.3;
+          cursor: not-allowed;
+          pointer-events: none;
+        }
+
+        /* Number pills */
+        .page-pill {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 38px;
+          height: 38px;
+          border-radius: 8px;
+          font-size: 0.85rem;
+          font-weight: 500;
+          cursor: pointer;
+          border: 1px solid transparent;
+          background: transparent;
+          color: rgba(240,237,232,0.55);
+          transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
+          user-select: none;
+          flex-shrink: 0;
+        }
+        .page-pill:hover:not(.active) {
+          background: rgba(205,255,0,0.1);
+          color: #fff;
+          border-color: rgba(205,255,0,0.25);
+          transform: translateY(-1px);
+        }
+        .page-pill.active {
+          background: #CDFF00;
+          color: #111;
+          border-color: #CDFF00;
+          font-weight: 700;
+          box-shadow: 0 4px 14px rgba(205,255,0,0.3);
+        }
+
+        /* Ellipsis */
+        .page-ellipsis {
+          width: 28px;
+          text-align: center;
+          color: rgba(240,237,232,0.3);
+          font-size: 0.9rem;
+          user-select: none;
+          pointer-events: none;
+          line-height: 38px;
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 480px) {
+          .page-nav { width: 42px; height: 42px; padding: 0; border-radius: 10px; }
+          .page-nav-label { display: none; }
+          .page-pill { width: 34px; height: 34px; font-size: 0.8rem; border-radius: 7px; }
+          .pagination { gap: 4px; margin-top: 36px; }
+        }
+
+        @media (max-width: 360px) {
+          .page-pill { width: 30px; height: 30px; font-size: 0.75rem; }
+          .page-nav { width: 38px; height: 38px; }
+          .pagination { gap: 3px; }
         }
       `}</style>
 
       <section
         ref={sectionRef}
         id="portfolio"
-        className="py-24 bg-[#222120] relative z-10 min-h-[80vh]" // ← key fix: z-index + min height
+        className="py-24 bg-[#222120] relative z-10 min-h-[80vh]"
       >
         <div className="container mx-auto px-6">
+
           {/* Header */}
           <div className="port-fade text-center mb-12">
             <h2 className="text-3xl md:text-5xl font-display font-bold mb-4">
@@ -187,21 +274,16 @@ export function Portfolio() {
             ))}
           </div>
 
-          {/* Content Area */}
+          {/* Content */}
           {loading ? (
-            <div className="text-center py-20 text-gray-400 text-xl">
-              Loading portfolio...
-            </div>
+            <div className="text-center py-20 text-gray-400 text-xl">Loading portfolio...</div>
           ) : error ? (
-            <div className="text-center py-20 text-red-400 text-xl">
-              {error}
-            </div>
+            <div className="text-center py-20 text-red-400 text-xl">{error}</div>
           ) : paginatedVideos.length === 0 ? (
-            <div className="text-center py-20 text-gray-400 text-xl">
-              No videos found in this category.
-            </div>
+            <div className="text-center py-20 text-gray-400 text-xl">No videos found in this category.</div>
           ) : (
             <>
+              {/* Grid */}
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
                 {paginatedVideos.map((item, index) => (
                   <div
@@ -210,41 +292,44 @@ export function Portfolio() {
                     style={{ transitionDelay: `${index * 100}ms` }}
                     onClick={() => setSelectedVideo(item)}
                   >
-                    {item.thumbnail_url ? (
-                      <img
-                        src={item.thumbnail_url}
-                        alt={item.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-500">
-                        No thumbnail
-                      </div>
-                    )}
-
-                    {/* Gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-
-                    {/* Play icon on hover */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="w-16 h-16 rounded-full bg-[#CDFF00]/80 flex items-center justify-center shadow-lg shadow-[#CDFF00]/30 transform group-hover:scale-110 transition-transform">
-                        <Play className="w-8 h-8 text-[#222120] fill-[#222120] ml-1" />
-                      </div>
+  <div className="w-16 h-16 rounded-full bg-[#CDFF00]/80 flex items-center justify-center shadow-lg shadow-[#CDFF00]/30 transform group-hover:scale-110 transition-transform">
+    <Play className="w-8 h-8 text-[#222120] fill-[#222120] ml-1" />
+  </div>
+</div>
+                    <div className="w-full h-full overflow-hidden">
+                      {item.thumbnail_url ? (
+                        <img
+                          src={getMediaUrl(item.thumbnail_url) || ''}
+                          alt={item.title}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          onError={(e) => {
+                            const video = document.createElement('video');
+                            video.src = getMediaUrl(item.video_url || item.video_file) || '';
+                            video.muted = true;
+                            video.preload = 'metadata';
+                            video.className = 'w-full h-full object-cover';
+                            e.currentTarget.replaceWith(video);
+                          }}
+                        />
+                      ) : (
+                        <video
+                          src={getMediaUrl(item.video_url || item.video_file) || ''}
+                          muted
+                          preload="metadata"
+                          className="w-full h-full object-cover"
+                        />
+                      )}
                     </div>
 
-                    {/* Info */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
                     <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/90 to-transparent">
                       <p className="text-xs text-[#CDFF00] font-medium uppercase tracking-wider mb-1">
-                        {categories.find(c => c.id === item.category.id)?.name || 'Video'}
+                        {categories.find((c) => c.id === item.category.id)?.name || 'Video'}
                       </p>
-                      <h4 className="font-display font-semibold text-white text-lg">
-                        {item.title}
-                      </h4>
-                      {item.couple && (
-                        <p className="text-sm text-gray-300 mt-1">
-                          {item.couple}
-                        </p>
-                      )}
+                      <h4 className="font-display font-semibold text-white text-lg">{item.title}</h4>
+                      {item.couple && <p className="text-sm text-gray-300 mt-1">{item.couple}</p>}
                     </div>
                   </div>
                 ))}
@@ -252,93 +337,94 @@ export function Portfolio() {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-4 mt-12">
+                <nav className="pagination" aria-label="Portfolio pages">
+
+                  {/* Previous */}
                   <button
+                    className="page-nav"
                     onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
                     disabled={currentPage === 0}
-                    className="px-6 py-3 rounded-lg border border-[#4A4845] text-gray-300 disabled:opacity-40 hover:border-[#CDFF00] hover:text-white transition-colors"
+                    aria-label="Previous page"
                   >
-                    <ChevronLeft className="inline w-5 h-5 mr-2" />
-                    Previous
+                    <ChevronLeft size={16} />
+                    <span className="page-nav-label">Previous</span>
                   </button>
 
-                  {Array.from({ length: totalPages }).map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setCurrentPage(i)}
-                      className={`w-10 h-10 rounded-lg font-medium transition-all ${
-                        currentPage === i
-                          ? 'bg-[#CDFF00] text-black shadow-lg'
-                          : 'text-gray-300 hover:bg-[#CDFF00]/20 hover:text-white'
-                      }`}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
+                  {/* Page numbers */}
+                  {getPageRange().map((item, i) =>
+                    item === '...' ? (
+                      <span key={`ellipsis-${i}`} className="page-ellipsis">…</span>
+                    ) : (
+                      <button
+                        key={item as number}
+                        className={`page-pill ${currentPage === item ? 'active' : ''}`}
+                        onClick={() => setCurrentPage(item as number)}
+                        aria-label={`Page ${(item as number) + 1}`}
+                        aria-current={currentPage === item ? 'page' : undefined}
+                      >
+                        {(item as number) + 1}
+                      </button>
+                    )
+                  )}
 
+                  {/* Next */}
                   <button
+                    className="page-nav"
                     onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
                     disabled={currentPage === totalPages - 1}
-                    className="px-6 py-3 rounded-lg border border-[#4A4845] text-gray-300 disabled:opacity-40 hover:border-[#CDFF00] hover:text-white transition-colors"
+                    aria-label="Next page"
                   >
-                    Next
-                    <ChevronRight className="inline w-5 h-5 ml-2" />
+                    <span className="page-nav-label">Next</span>
+                    <ChevronRight size={16} />
                   </button>
-                </div>
+
+                </nav>
               )}
             </>
           )}
         </div>
       </section>
 
-      {/* Video Popup */}
-      {selectedVideo && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
-          onClick={() => setSelectedVideo(null)}
-        >
-          <div
-            className="relative w-full max-w-5xl aspect-video bg-[#1a1a1a] rounded-2xl overflow-hidden shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setSelectedVideo(null)}
-              className="absolute top-4 right-4 z-10 w-12 h-12 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-[#CDFF00] hover:text-black transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
+      {/* ─────────────────────────── Video Popup ─────────────────────────── */}
+{/* Video Popup */}
+{selectedVideo && (
+  <div
+    className="fixed inset-0 z-[9999] flex items-start justify-center px-4 pt-20 pb-8 bg-black/80 backdrop-blur-sm transition-opacity duration-300"
+    onClick={() => setSelectedVideo(null)}
+  >
+    <div
+      className="relative w-full max-w-4xl rounded-2xl overflow-hidden shadow-2xl bg-[#111111] transform transition-all duration-300 scale-100 sm:scale-105"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Close Button */}
+      <button
+        onClick={() => setSelectedVideo(null)}
+        className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-[#CDFF00] hover:text-black transition-all duration-200 shadow-lg"
+      >
+        <X className="w-5 h-5" />
+      </button>
 
-            <div className="w-full h-full relative">
-              {selectedVideo.thumbnail_url ? (
-                <img
-                  src={selectedVideo.thumbnail_url}
-                  alt={selectedVideo.title}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-gray-900 flex items-center justify-center text-gray-500 text-xl">
-                  No preview available
-                </div>
-              )}
+      {/* Video */}
+      <video
+        key={selectedVideo.id}
+        src={getMediaUrl(selectedVideo.video_url || selectedVideo.video_file) || ''}
+        className="w-full h-auto max-h-[70vh] object-contain bg-black"
+        controls
+        autoPlay
+      />
 
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60">
-                <div className="w-24 h-24 rounded-full bg-[#CDFF00] flex items-center justify-center mb-6 cursor-pointer hover:scale-110 transition-transform shadow-xl shadow-[#CDFF00]/30">
-                  <Play className="w-12 h-12 text-black fill-black ml-2" />
-                </div>
-                <h3 className="font-display text-2xl md:text-3xl font-bold text-white mb-2">
-                  {selectedVideo.title}
-                </h3>
-                {selectedVideo.couple && (
-                  <p className="text-gray-300 text-lg">{selectedVideo.couple}</p>
-                )}
-                <p className="text-[#CDFF00] text-base mt-4 opacity-80">
-                  Video playback coming soon
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Info */}
+      <div className="p-4 text-center bg-[#1a1a1a]">
+        <h3 className="text-xl md:text-2xl font-bold text-white mb-1">
+          {selectedVideo.title}
+        </h3>
+        {selectedVideo.couple && (
+          <p className="text-gray-300 text-base md:text-lg">{selectedVideo.couple}</p>
+        )}
+      </div>
+    </div>
+  </div>
+)}
     </>
   );
 }
