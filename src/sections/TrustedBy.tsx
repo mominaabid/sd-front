@@ -64,9 +64,9 @@ export function TrustedBy() {
         `}
       </style>
 
-      <h3 className="text-center text-sm font-medium tracking-[0.2em] uppercase text-white/50 mb-10">
-        Trusted By Leading Wedding Videographers
-      </h3>
+      <h3 className="text-center text-l font-bold tracking-[0.22em] uppercase text-white mb-12">
+  Trusted By Leading Wedding Videographers
+</h3>
 
       <div className="overflow-hidden relative">
         <div className="logo-scroll">
@@ -76,13 +76,13 @@ export function TrustedBy() {
               href={logo.link || "#"}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center min-w-[160px] h-12"
+              className="flex items-center justify-center min-w-[200px] h-16"
             >
               <img
                 src={logo.logo_url}
                 alt={logo.company_name}
                 loading="lazy"
-                className="max-h-20 w-auto object-contain opacity-70 hover:opacity-100 transition"
+                className="max-h-28 w-auto object-contain opacity-70 hover:opacity-100 transition"
               />
             </a>
           ))}

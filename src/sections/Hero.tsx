@@ -27,8 +27,8 @@ export function Hero({ isReady = true }: HeroProps) {
   const [scrolled, setScrolled] = useState(false);
 
   const fallbackData: HeroData = {
-    heading: "Wedding Films That Move\nPeople.",
-    subtitle: "Delivered On Time. Every Time.",
+    heading: "Wedding Films That Couples\nRemember.",
+    subtitle: "Professional postproduction for wedding videographers who refuse to compromise on quality or deadlines even during peak season.",
   };
 
   const fetchHero = useCallback(async () => {
@@ -78,8 +78,17 @@ export function Hero({ isReady = true }: HeroProps) {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap');
 
+@font-face {
+  font-family: "Porto";
+  src: url("/fonts/Porto-Regular.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Auriga";
+  src: url("/fonts/Auriga-Regular.woff2") format("woff2");
+}
         :root {
           --lime: #C8F400;
           --dark: #141312;
@@ -93,7 +102,7 @@ export function Hero({ isReady = true }: HeroProps) {
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-          font-family: 'Outfit', sans-serif;
+           font-family:'Porto', sans-serif;
           background: var(--dark);
           color: var(--light);
           overflow-x: hidden;
@@ -329,30 +338,35 @@ export function Hero({ isReady = true }: HeroProps) {
 }
 
         .hero-eyebrow {
-          display: inline-flex;
-          align-items: center;
-          gap: 12px;
-          color: var(--lime);
-          font-size: clamp(0.62rem, 1.1vw, 0.7rem);
-          font-weight: 500;
-          letter-spacing: 3.5px;
-          text-transform: uppercase;
-          opacity: 0;
-          transform: translateY(10px);
-          animation: fadeUp 0.7s ease forwards 0.1s;
-        }
-        .hero-eyebrow::before, .hero-eyebrow::after {
-          content: ''; display: block;
-          width: 28px; height: 1px;
-          background: var(--lime); opacity: 0.55;
-        }
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--lime);
+  font-size: clamp(0.68rem, 1.15vw, 0.76rem); /* slightly bigger */
+  font-weight: 500;
+  letter-spacing: 3.5px;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeUp 0.7s ease forwards 0.1s;
+}
+
+.hero-eyebrow::before,
+.hero-eyebrow::after {
+  content: '';
+  display: block;
+  width: 28px;
+  height: 1px;
+  background: var(--lime);
+  opacity: 0.55;
+}
 
         .hero-title {
-          font-family: 'Cormorant Garamond', Georgia, serif;
-          font-size: clamp(2.4rem, 6vw, 4.8rem);
-          font-weight: 100;
-          line-height: 1.04;
-          letter-spacing: -0.5px;
+        font-family:'Auriga', serif;
+  font-size: clamp(2.2rem,5vw,4.1rem);
+  font-weight:700;
+  letter-spacing:-0.25px;
+  line-height:1.05;
           white-space: pre-line;
           margin: clamp(18px, 3vw, 26px) 0 clamp(12px, 2vw, 18px);
           color: var(--light);
@@ -361,7 +375,7 @@ export function Hero({ isReady = true }: HeroProps) {
           animation: fadeUp 0.95s ease forwards 0.3s;
         }
         .hero-title em {
-          font-style: italic;
+          // font-style: italic;
           color: var(--lime);
         }
 
@@ -374,9 +388,10 @@ export function Hero({ isReady = true }: HeroProps) {
         }
 
         .hero-subtitle {
-          font-size: clamp(0.9rem, 1.8vw, 1.15rem);
-          font-weight: 400;
-          color: rgba(240,237,232,0.6);
+           font-family:'Porto', sans-serif;
+  font-size:clamp(0.9rem,1.5vw,1.05rem);
+  font-weight:600;
+          color: white;
           letter-spacing: 0.3px;
           margin-bottom: 10px;
           opacity: 0;
@@ -410,7 +425,8 @@ export function Hero({ isReady = true }: HeroProps) {
           color: #111;
           padding: clamp(12px, 1.5vw, 14px) clamp(22px, 3vw, 30px);
           border-radius: var(--radius);
-          font-weight: 600;
+           font-family:'Auriga', serif;
+  font-weight:600;
           font-size: clamp(0.83rem, 1.3vw, 0.92rem);
           text-decoration: none;
           letter-spacing: 0.2px;
@@ -431,7 +447,8 @@ export function Hero({ isReady = true }: HeroProps) {
           color: rgba(240,237,232,0.75);
           padding: clamp(11px, 1.4vw, 13px) clamp(22px, 3vw, 30px);
           border-radius: var(--radius);
-          font-size: clamp(0.83rem, 1.3vw, 0.92rem);
+           font-family:'Auriga', serif;
+  font-weight:600;
           text-decoration: none;
           letter-spacing: 0.2px;
           transition: border-color 0.25s, color 0.25s, background 0.25s;
@@ -546,7 +563,6 @@ export function Hero({ isReady = true }: HeroProps) {
                   : <a href={href}>{label}</a>}
               </li>
             ))}
-            <li><a href="#pricing" className="nav-cta">Start a Project</a></li>
           </ul>
 
           <button
@@ -575,14 +591,10 @@ export function Hero({ isReady = true }: HeroProps) {
         <div className="hero-content">
           <span className="hero-eyebrow">Wedding Video Editing</span>
           <h1 className="hero-title">
-            {heading.includes("Move") ? <>Wedding Films That{"\n"} Move People.</> : heading}
+            {heading.includes("Move") ? <>Wedding Films That Couples{"\n"} Remember.</> : heading}
           </h1>
           <div className="hero-rule" />
           <p className="hero-subtitle">{subtitle}</p>
-          <p className="hero-desc">
-            Professional post-production for wedding videographers who refuse
-            to compromise on quality or deadlines.
-          </p>
           <div className="hero-actions">
             <a href="#pricing" className="btn-lime">View Pricing →</a>
             <a href="#portfolio" className="btn-ghost">Watch Portfolio</a>

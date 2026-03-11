@@ -2,9 +2,6 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Quote, Star } from 'lucide-react';
 import { API_BASE_URL } from '../constants/urls';
 
-// ─────────────────────────────────────────────────────────────
-// Type definition
-// ─────────────────────────────────────────────────────────────
 interface Review {
   id: number;
   name: string;
@@ -14,7 +11,6 @@ interface Review {
   rating: number;
 }
 
-// ─────────────────────────────────────────────────────────────
 export function TextReviews() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -24,20 +20,15 @@ export function TextReviews() {
   const sectionRef = useRef<HTMLElement>(null);
   const autoScrollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // ─── Fetch reviews ─────────────────────────────────────────────
   useEffect(() => {
     const fetchReviews = async () => {
       try {
         setLoading(true);
         setError(null);
-
         const res = await fetch(`${API_BASE_URL}reviews/`);
         if (!res.ok) throw new Error(`Reviews fetch failed: ${res.status}`);
-
         const json = await res.json();
-        const fetched = json.data || json;
-
-        setReviews(fetched);
+        setReviews(json.data || json);
       } catch (err) {
         console.error('Failed to load reviews:', err);
         setError('Could not load client reviews');
@@ -45,11 +36,9 @@ export function TextReviews() {
         setLoading(false);
       }
     };
-
     fetchReviews();
   }, []);
 
-  // ─── Improved fade-in observer + force visible fallback ────────
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -60,17 +49,11 @@ export function TextReviews() {
           }
         });
       },
-      {
-        threshold: 0.15,              // trigger when 15% visible
-        rootMargin: '0px 0px -120px 0px', // earlier trigger
-      }
+      { threshold: 0.15, rootMargin: '0px 0px -120px 0px' }
     );
-
-    // Query all .fade-up in the document (safer)
     const elements = document.querySelectorAll('.fade-up');
     elements.forEach((el) => observer.observe(el));
 
-    // Force visible for elements already in viewport after data loads
     setTimeout(() => {
       document.querySelectorAll('.fade-up').forEach((el) => {
         const rect = el.getBoundingClientRect();
@@ -78,16 +61,14 @@ export function TextReviews() {
           el.classList.add('visible');
         }
       });
-    }, 1000); // delay after content renders
+    }, 1000);
 
     return () => observer.disconnect();
-  }, [reviews, loading]); // re-run when reviews load
+  }, [reviews, loading]);
 
-  // ─── Auto-scroll logic ─────────────────────────────────────────
   const startAutoScroll = useCallback(() => {
     if (autoScrollRef.current) clearInterval(autoScrollRef.current);
     if (reviews.length === 0) return;
-
     autoScrollRef.current = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % reviews.length);
     }, 5000);
@@ -100,7 +81,6 @@ export function TextReviews() {
     };
   }, [startAutoScroll]);
 
-  // ─── Navigation ────────────────────────────────────────────────
   const handlePrev = () => {
     setActiveIndex((prev) => (prev - 1 + reviews.length) % reviews.length);
     startAutoScroll();
@@ -111,7 +91,6 @@ export function TextReviews() {
     startAutoScroll();
   };
 
-  // ─── Offset calculator for carousel ────────────────────────────
   const getOffset = (index: number) => {
     let offset = index - activeIndex;
     const half = Math.floor(reviews.length / 2);
@@ -120,19 +99,18 @@ export function TextReviews() {
     return offset;
   };
 
-  // ─── Render ─────────────────────────────────────────────────────
   if (loading) {
     return (
-      <section className="py-24 bg-[#363432] text-center text-gray-400 min-h-[60vh] flex items-center justify-center">
-        <div className="text-2xl">Loading client reviews...</div>
+      <section className="py-16 bg-[#363432] text-center text-gray-400 min-h-[50vh] flex items-center justify-center">
+        <div className="text-xl">Loading client reviews...</div>
       </section>
     );
   }
 
   if (error || reviews.length === 0) {
     return (
-      <section className="py-24 bg-[#363432] text-center text-red-400 min-h-[60vh] flex items-center justify-center">
-        <div className="text-2xl">{error || 'No reviews available at the moment.'}</div>
+      <section className="py-20 bg-[#363432] text-center text-red-400 min-h-[50vh] flex items-center justify-center">
+        <div className="text-xl">{error || 'No reviews available at the moment.'}</div>
       </section>
     );
   }
@@ -140,31 +118,28 @@ export function TextReviews() {
   return (
     <section
       ref={sectionRef}
-      className="py-20 md:py-24 bg-[#363432] overflow-hidden relative z-10 min-h-[80vh]"
+      className="py-16 md:py-20 bg-[#363432] overflow-hidden relative z-10 min-h-[70vh]"
     >
-      <div className="container-custom max-w-7xl mx-auto px-6">
-        {/* Header */}
-        <div className="text-center mb-12 md:mb-16">
-          <h2 className="fade-up text-3xl md:text-5xl font-display font-bold text-[#F3F3F2]">
+      <div className="container-custom max-w-6xl mx-auto px-4">
+        <div className="text-center mb-10 md:mb-12">
+          <h2 className="fade-up text-2xl md:text-4xl font-display font-bold text-[#F3F3F2]">
             What Our Clients <span className="text-[#CDFF00]">Say</span>
           </h2>
         </div>
 
-        {/* Carousel container */}
-        <div className="fade-up relative" style={{ height: '420px', minHeight: '360px' }}>
-          {/* Edge fade masks */}
-          <div className="absolute inset-y-0 left-0 w-1/5 bg-gradient-to-r from-[#363432] to-transparent z-10 pointer-events-none" />
-          <div className="absolute inset-y-0 right-0 w-1/5 bg-gradient-to-l from-[#363432] to-transparent z-10 pointer-events-none" />
+        <div className="fade-up relative" style={{ height: '320px', minHeight: '280px' }}>
+          <div className="absolute inset-y-0 left-0 w-1/6 bg-gradient-to-r from-[#363432] to-transparent z-10 pointer-events-none" />
+          <div className="absolute inset-y-0 right-0 w-1/6 bg-gradient-to-l from-[#363432] to-transparent z-10 pointer-events-none" />
 
           {reviews.map((review, index) => {
             const offset = getOffset(index);
             const isCenter = offset === 0;
             const isAdjacent = Math.abs(offset) === 1;
 
-            const translateX = offset * 200; // wider spacing
-            const scale = isCenter ? 1 : 0.88;
-            const opacity = isCenter ? 1 : isAdjacent ? 0.65 : 0;
-            const blur = isCenter ? 0 : isAdjacent ? 3 : 6;
+            const translateX = offset * 180;
+            const scale = isCenter ? 1 : 0.85;
+            const opacity = isCenter ? 1 : isAdjacent ? 0.6 : 0;
+            const blur = isCenter ? 0 : isAdjacent ? 2 : 5;
             const zIndex = isCenter ? 30 : isAdjacent ? 20 : 10;
 
             return (
@@ -176,25 +151,24 @@ export function TextReviews() {
                   opacity,
                   filter: `blur(${blur}px)`,
                   zIndex,
-                  width: '600px',
-                  maxWidth: '92vw',
+                  width: '500px',
+                  maxWidth: '90vw',
                   pointerEvents: isCenter || isAdjacent ? 'auto' : 'none',
                 }}
               >
                 <div
                   className={`
                     bg-[#2a2826] border ${isCenter ? 'border-[#CDFF00]/50 shadow-2xl shadow-[#CDFF00]/20' : 'border-[#4A4845]/50'}
-                    rounded-2xl p-8 md:p-12 shadow-xl h-full flex flex-col transition-all duration-500
+                    rounded-2xl p-6 md:p-8 shadow-lg h-full flex flex-col transition-all duration-500
                   `}
                 >
-                  {/* Quote + Stars */}
-                  <div className="flex justify-between items-start mb-6 md:mb-8">
-                    <Quote className="w-12 h-12 md:w-14 md:h-14 text-[#CDFF00]/30 flex-shrink-0" />
+                  <div className="flex justify-between items-start mb-4 md:mb-6">
+                    <Quote className="w-10 h-10 md:w-12 md:h-12 text-[#CDFF00]/30 flex-shrink-0" />
                     <div className="flex gap-1">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star
                           key={i}
-                          className={`w-6 h-6 md:w-7 md:h-7 ${
+                          className={`w-5 h-5 md:w-6 md:h-6 ${
                             i < (review.rating || 5)
                               ? 'fill-[#CDFF00] text-[#CDFF00]'
                               : 'text-[#4A4845]/40'
@@ -204,14 +178,12 @@ export function TextReviews() {
                     </div>
                   </div>
 
-                  {/* Review text */}
-                  <p className="text-base md:text-lg text-[#F3F3F2] leading-relaxed text-center italic mb-8 flex-grow line-clamp-6">
+                  <p className="text-sm md:text-base text-[#F3F3F2] leading-relaxed text-center italic mb-6 md:mb-8 flex-grow line-clamp-5">
                     "{review.review_text}"
                   </p>
 
-                  {/* Author */}
-                  <div className="flex items-center gap-4 mt-auto">
-                    <div className="w-16 h-16 md:w-18 md:h-18 rounded-full overflow-hidden bg-gradient-to-br from-[#CDFF00]/20 to-[#CDFF00]/5 border-2 border-[#CDFF00]/30 flex-shrink-0">
+                  <div className="flex items-center gap-3 md:gap-4 mt-auto">
+                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden bg-gradient-to-br from-[#CDFF00]/20 to-[#CDFF00]/5 border-2 border-[#CDFF00]/30 flex-shrink-0">
                       {review.picture ? (
                         <img
                           src={review.picture}
@@ -219,19 +191,16 @@ export function TextReviews() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-[#CDFF00] font-bold text-xl md:text-2xl">
+                        <div className="w-full h-full flex items-center justify-center text-[#CDFF00] font-bold text-lg md:text-xl">
                           {review.name.split(' ').map(n => n[0]).join('')}
                         </div>
                       )}
                     </div>
-
                     <div className="min-w-0">
-                      <p className="font-semibold text-[#F3F3F2] text-lg md:text-xl truncate">
+                      <p className="font-semibold text-[#F3F3F2] text-base md:text-lg truncate">
                         {review.name}
                       </p>
-                      <p className="text-[#CDFF00] text-sm md:text-base truncate">
-                        {review.title}
-                      </p>
+                      <p className="text-[#CDFF00] text-xs md:text-sm truncate">{review.title}</p>
                     </div>
                   </div>
                 </div>
@@ -240,17 +209,16 @@ export function TextReviews() {
           })}
         </div>
 
-        {/* Navigation */}
-        <div className="flex items-center justify-center gap-8 md:gap-12 mt-10 md:mt-14">
+        <div className="flex items-center justify-center gap-6 md:gap-10 mt-8 md:mt-10">
           <button
             onClick={handlePrev}
-            className="w-14 h-14 md:w-16 md:h-16 rounded-full border border-[#4A4845] bg-transparent flex items-center justify-center text-[#DADADA] hover:text-[#CDFF00] hover:border-[#CDFF00] transition-all shadow-md"
+            className="w-12 h-12 md:w-14 md:h-14 rounded-full border border-[#4A4845] bg-transparent flex items-center justify-center text-[#DADADA] hover:text-[#CDFF00] hover:border-[#CDFF00] transition-all shadow-sm"
             aria-label="Previous review"
           >
-            <ChevronLeft className="w-7 h-7 md:w-8 md:h-8" />
+            <ChevronLeft className="w-6 h-6 md:w-7 md:h-7" />
           </button>
 
-          <div className="flex gap-4 md:gap-5">
+          <div className="flex gap-3 md:gap-4">
             {reviews.map((_, index) => (
               <button
                 key={index}
@@ -261,10 +229,10 @@ export function TextReviews() {
                     startAutoScroll();
                   }
                 }}
-                className={`h-3 md:h-3.5 rounded-full transition-all duration-400 ${
+                className={`h-2 md:h-2.5 rounded-full transition-all duration-400 ${
                   index === activeIndex
-                    ? 'w-12 md:w-14 bg-[#CDFF00] shadow-md shadow-[#CDFF00]/40'
-                    : 'w-3 md:w-4 bg-[#4A4845] hover:bg-[#CDFF00]/60'
+                    ? 'w-10 md:w-12 bg-[#CDFF00] shadow-sm shadow-[#CDFF00]/40'
+                    : 'w-2 md:w-3 bg-[#4A4845] hover:bg-[#CDFF00]/60'
                 }`}
               />
             ))}
@@ -272,10 +240,10 @@ export function TextReviews() {
 
           <button
             onClick={handleNext}
-            className="w-14 h-14 md:w-16 md:h-16 rounded-full border border-[#4A4845] bg-transparent flex items-center justify-center text-[#DADADA] hover:text-[#CDFF00] hover:border-[#CDFF00] transition-all shadow-md"
+            className="w-12 h-12 md:w-14 md:h-14 rounded-full border border-[#4A4845] bg-transparent flex items-center justify-center text-[#DADADA] hover:text-[#CDFF00] hover:border-[#CDFF00] transition-all shadow-sm"
             aria-label="Next review"
           >
-            <ChevronRight className="w-7 h-7 md:w-8 md:h-8" />
+            <ChevronRight className="w-6 h-6 md:w-7 md:h-7" />
           </button>
         </div>
       </div>

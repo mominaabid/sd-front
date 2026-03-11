@@ -732,7 +732,6 @@ export function TeamPage() {
                 {type === 'router' ? <Link to={href}>{label}</Link> : <a href={href}>{label}</a>}
               </li>
             ))}
-            <li><a href="/#pricing" className="tp-nav-cta">Start a Project</a></li>
           </ul>
           <button
             className={`tp-ham ${mobileMenuOpen ? 'open' : ''}`}

@@ -105,7 +105,6 @@ export default function Pricing() {
       if (res.ok) {
         setIsSubmitted(true);
 
-        // ── Meta Pixel: track lead with plan details ──
         if (typeof window !== 'undefined' && (window as any).fbq) {
           (window as any).fbq('track', 'Lead', {
             content_name: selectedPlan.heading,
@@ -221,14 +220,14 @@ export default function Pricing() {
         }
       `}</style>
 
-      <section id="pricing" className="section-padding bg-[#222120]">
+      <section id="pricing" className="py-12 md:py-16 bg-[#222120]">
         <div className="container-custom">
           <div className="text-center mb-16">
             <h2 className="font-serif text-3xl md:text-5xl text-[#F3F3F2] font-bold mb-4">
               Transparent <span className="text-[#CDFF00]">Pricing</span>
             </h2>
             <p className="text-[#DADADA] text-lg">
-              Turnaround time = 7–8 Working Days · Multiple videos from one wedding? Volume pricing applies automatically
+              The turnaround around depends on the number of videos
             </p>
           </div>
 
@@ -236,7 +235,7 @@ export default function Pricing() {
             {cards.map((card) => (
               <div
                 key={card.id}
-                className="pc-card bg-card/50 border border-border/50 rounded-lg p-6 relative overflow-visible"
+                className="pc-card bg-card/50 border border-border/50 rounded-lg p-6 relative overflow-visible flex flex-col"
               >
                 {card.is_most_popular && (
                   <span className="absolute -top-3 left-6 px-3 py-1 bg-[#CDFF00] text-[#1a1918] text-xs font-semibold rounded-full">
@@ -244,14 +243,14 @@ export default function Pricing() {
                   </span>
                 )}
 
-                <div className="pc-card-body">
-                  <div className="pc-features">
+                <div className="pc-card-body flex flex-col flex-1">
+                  <div className="pc-features flex-1">
                     <h3 className="text-xl font-bold text-[#F3F3F2]">{card.heading}</h3>
                     {card.subheading && (
                       <p className="text-sm text-muted-foreground mb-4">{card.subheading}</p>
                     )}
                     {card.features && card.features.length > 0 && (
-                      <ul className="space-y-2 mb-2">
+                      <ul className="space-y-2 mb-4">
                         {card.features.map((f, i) => (
                           <li key={i} className="flex items-start gap-2 text-sm">
                             <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
@@ -262,14 +261,22 @@ export default function Pricing() {
                     )}
                   </div>
 
-                  <div className="pc-btn-wrap">
-                    <button
-                      onClick={() => setSelectedPlan(card)}
-                      className="w-full py-3 border border-primary/40 text-primary rounded-md hover:bg-primary/10 transition-colors"
-                    >
-                      {card.button_label}
-                    </button>
-                  </div>
+                  {/* Only bundle card shows price & turnaround */}
+                 {card.card_type === 'bundle' && (
+  <div className="flex flex-col items-center mt-4"> {/* space from features */}
+    <span className="text-xl text-white">$499</span>
+    <span className="text-xs text-[#DADADA] mt-1">Turnaround time = 7–8 Working Days</span>
+  </div>
+)}
+
+                  <div className="pc-btn-wrap mt-0 pt-1"> {/* almost no spacing */}
+  <button
+    onClick={() => setSelectedPlan(card)}
+    className="w-full py-3 border border-primary/40 text-primary rounded-md hover:bg-primary/10 transition-colors"
+  >
+    {card.button_label}
+  </button>
+</div>
                 </div>
               </div>
             ))}

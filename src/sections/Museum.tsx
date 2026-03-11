@@ -36,7 +36,7 @@ export function Museum() {
   return (
     <section
       ref={sectionRef}
-      className="py-24 bg-[#222120]"
+      className="py-16 bg-[#222120]"
     >
       <style>{`
         .museum-fade {
@@ -55,40 +55,40 @@ export function Museum() {
 
         {/* Header */}
         <div className="museum-fade text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-display font-bold mb-4">
-            What Makes Us <span className="italic">Special?</span>
+          <h2 className="text-3xl md:text-5xl font-primary font-bold mb-4 text-white">
+            What Makes Us <span className="text-[#CDFF00]">Special?</span>
           </h2>
-          <p className="text-[#DADADA] text-lg max-w-2xl mx-auto">
-            Six reasons wedding videographers trust us with their most important footage.
+          <p className="font-secondary text-[#DADADA] text-lg max-w-2xl mx-auto">
+            Six reasons wedding videographers trust us with their clients footage.
           </p>
         </div>
 
         {/* Features Grid */}
-<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-  {whatMakesSpecialConfig.features.map((feature, index) => {
-    const Icon = iconMap[feature.number] || Zap;
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {whatMakesSpecialConfig.features.map((feature, index) => {
+            const Icon = iconMap[feature.number] || Zap;
 
-    return (
-      <div
-        key={feature.number}
-        className="museum-fade group bg-card/30 border border-border/30 rounded-lg p-6 hover:border-primary/20 transition-all flex flex-col"
-        style={{ transitionDelay: `${index * 100}ms`, minHeight: '180px' }}
-      >
-        <div className="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center mb-3">
-          <Icon className="w-5 h-5 text-primary" />
+            return (
+              <div
+                key={feature.number}
+                className="museum-fade group bg-card/30 border border-border/30 rounded-lg p-6 hover:border-primary/20 transition-all flex flex-col"
+                style={{ transitionDelay: `${index * 100}ms`, minHeight: '180px' }}
+              >
+                <div className="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center mb-3">
+                  <Icon className="w-5 h-5 text-primary" />
+                </div>
+
+                <h3 className="text-lg font-primary font-semibold mb-1 uppercase tracking-wide text-white">
+                  {feature.title}
+                </h3>
+
+                <p className="font-secondary text-[#DADADA] text-sm leading-relaxed">
+                  {feature.description}
+                </p>
+              </div>
+            );
+          })}
         </div>
-
-        <h3 className="text-lg font-display font-semibold mb-1 uppercase tracking-wide">
-          {feature.title}
-        </h3>
-
-        <p className="text-muted-foreground text-xs leading-relaxed">
-          {feature.description}
-        </p>
-      </div>
-    );
-  })}
-</div>
 
       </div>
     </section>

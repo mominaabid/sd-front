@@ -93,7 +93,6 @@ export interface HeroConfig {
   scriptText: string;
   mainTitle: string;
   subtitle: string;
-  description: string;
   ctaPrimaryText: string;
   ctaPrimaryHref: string;
   ctaSecondaryText: string;
@@ -106,10 +105,8 @@ export interface HeroConfig {
 
 export const heroConfig: HeroConfig = {
   scriptText: "WEDDING VIDEO EDITING",
-  mainTitle: "Wedding Films That Move\nPeople.",
-  subtitle: "Delivered On Time. Every Time.",
-  description:
-    "Professional post-production partner for wedding videographers — cinematic quality, fast turnaround, zero missed deadlines.",
+  mainTitle: "Wedding Films That Couples\n Remember",
+  subtitle: "Professional postproduction for wedding videographers who refuse to compromise on quality or deadlines even during peak season.",
   ctaPrimaryText: "View Pricing",
   ctaPrimaryHref: "#pricing",
   ctaSecondaryText: "See Portfolio",
@@ -169,26 +166,18 @@ export interface BuiltForConfig {
   mainTitle: string;
   subtitle: string;
   features: FeaturePoint[];
-  quote: {
-    text: string;
-    attribution: string;
-  };
 }
 
 export const builtForConfig: BuiltForConfig = {
   scriptText: "BUILT FOR WEDDING VIDEOGRAPHERS",
   mainTitle: "Your Post-Production Partner",
-  subtitle: "We handle editing so you can focus on capturing the day.",
+  subtitle: "We handle editing so you can focus on getting more clients.",
   features: [
-    { title: "Lightning-Fast Highlights", description: "24–48 hour delivery even in peak season — no more stressed clients." },
-    { title: "Cinematic Consistency", description: "Signature look across every wedding — your brand stays strong." },
-    { title: "Unlimited Revisions", description: "Client-friendly workflow with 4 revision rounds included." },
-    { title: "Secure & Private", description: "In-house team only — no freelancers, no data leaks." },
+    { title: "Time Saving", description: " Stuck in editing delays your ability to shoot more weddings and scale your business. We streamline post-production so you can focus on filming and growth." },
+    { title: "Quality", description: "Achieving cinematic quality and modern wedding styles requires focus and expertise. Since post production is our sole priority, we’re dedicated to elevating the final film beyond standard edits." },
+    { title: "Peak Season Burnout", description: "During peak season, edits often become rushed and repetitive due to workload. We ensure each wedding film remains creatively distinct and crafted like a story." },
+    { title: "Reliability", description: "Wedding footage demands trust, security, and dependable timelines. With a system refined over 3 years, we deliver consistency you can rely on especially when it matters most." },
   ],
-  quote: {
-    text: "They’ve become an extension of our team. We don’t even think about editing anymore.",
-    attribution: "James R., Forever Films",
-  },
 };
 
 // -----------------------------------------------------------------------------
@@ -206,31 +195,22 @@ export interface WhatMakesSpecialConfig {
   subtitle: string;
   introText: string;
   features: SpecialFeature[];
-  quote: {
-    prefix: string;
-    text: string;
-    attribution: string;
-  };
+
 }
 
 export const whatMakesSpecialConfig: WhatMakesSpecialConfig = {
   scriptText: "WHY VIDEOGRAPHERS CHOOSE US",
   mainTitle: "What Makes Us Different",
-  subtitle: "Six reasons we’ve become the go-to editing partner for wedding filmmakers.",
+  subtitle: "Six reasons wedding videographers trust us with their clients footage.",
   introText: "We don’t just edit — we protect your time, your brand, and your reputation.",
   features: [
-    { number: "01", title: "500+ TB Handled", description: "Securely managed over half a petabyte of wedding footage." },
-    { number: "02", title: "Wedding Specialists", description: "Only wedding films — deep understanding of emotion & pacing." },
-    { number: "03", title: "High-End Workstations", description: "Optimized for 4K/6K Log footage (FX3, R5C, A1, RED, etc.)." },
-    { number: "04", title: "4 Revision Rounds", description: "You → us → client → final. No surprise changes." },
-    { number: "05", title: "24–48 hr Highlights", description: "Peak season guaranteed — no excuses, no delays." },
-    { number: "06", title: "100% In-House", description: "9-person internal team — full confidentiality & quality control." },
+    { number: "01", title: "LARGE DATA MANAGEMENT:", description: "Over the last 3 years, we have securely handled more than 500TB of wedding footage, with a system built to manage large files smoothly and efficiently. " },
+    { number: "02", title: "Wedding Specialists", description: "Our editors are not just technicians many have filmmaking backgrounds and understand emotional pacing, narrative flow, and cinematic wedding storytelling." },
+    { number: "03", title: "High-End Workstations", description: "Equipped with high-performance Windows and Apple systems optimized for 4K 10-bit Log footage from cameras like Sony FX3, Canon R6, and Sony A7S III." },
+    { number: "04", title: "4 REVISIONS WORKFLOW ", description: "We offer 4 sets of revisions, one between you and our team for alignment, followed by 3 revision rounds for your client to ensure the final film matches their expectations perfectly" },
+    { number: "05", title: "FAST TURNAROUND TIME:", description: "Our dedicated workflow and specialized wedding editing pipeline allow us to deliver highlights within 48-72 hours, even during peak season, without compromising quality." },
+    { number: "06", title: "DATA PRIVACY:", description: "All projects are managed exclusively by our in-house team of 9 carefully selected editors, ensuring complete confidentiality and secure handling of every client’s footage." },
   ],
-  quote: {
-    prefix: "Our Commitment",
-    text: "Your deadline is our deadline. Your client is our client.",
-    attribution: "S&D Media Team",
-  },
 };
 // -----------------------------------------------------------------------------
 // Portfolio Config

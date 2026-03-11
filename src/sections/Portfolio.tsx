@@ -246,7 +246,7 @@ export function Portfolio() {
       <section
         ref={sectionRef}
         id="portfolio"
-        className="py-24 bg-[#222120] relative z-10 min-h-[80vh]"
+        className="py-16 bg-[#222120] relative z-10 min-h-[80vh]"
       >
         <div className="container mx-auto px-6">
 

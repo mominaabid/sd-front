@@ -9,6 +9,22 @@
 
 /* ── Base styles ── */
 @layer base {
+  @layer base {
+  /* Primary and secondary fonts */
+  .font-primary { font-family: 'Cormorant Garamond', serif; }
+  .font-secondary { font-family: 'Poppins', sans-serif; }
+
+  /* Ensure all headings use primary font */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400; /* default weight, can override with Tailwind classes */
+  }
+
+  /* All body text uses secondary font */
+  body, p, span, li, a, button {
+    font-family: 'Poppins', sans-serif;
+  }
+}
   :root {
     /* S&D Media Color Palette */
     --grey-light: #4A4845;
@@ -75,6 +91,7 @@
     @apply px-8 py-3 text-sm font-medium tracking-wide transition-all duration-300;
     background-color: var(--neon-green);
     color: var(--grey-dark);
+    font-family: 'Brooklyn', cursive; /* Secondary font for buttons */
   }
 
   .btn-primary:hover {
@@ -82,12 +99,13 @@
     transform: translateY(-2px);
     box-shadow: 0 4px 20px rgba(205, 255, 0, 0.3);
   }
-
+  
   .btn-dark {
     @apply px-8 py-3 text-sm font-medium tracking-wide transition-all duration-300;
     background-color: transparent;
     color: var(--white-primary);
     border: 1px solid var(--neon-green);
+    font-family: 'Brooklyn', cursive;
   }
 
   .btn-dark:hover {
