@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import emailjs from '@emailjs/browser';
 import { footerConfig } from '../config';
 import {
   MapPin,
@@ -12,7 +13,13 @@ import {
   Youtube,
 } from 'lucide-react';
 
-const iconMap = {
+const EMAILJS_SERVICE_ID  = 'service_t0pawjh';
+const EMAILJS_TEMPLATE_ID = 'template_f67ipi7';
+const EMAILJS_PUBLIC_KEY  = 'Cw8opDgdlvyc27n2Q';
+
+type IconName = 'MapPin' | 'Phone' | 'Mail' | 'Instagram' | 'Facebook' | 'Linkedin' | 'Youtube';
+
+const iconMap: Record<IconName, React.ElementType> = {
   MapPin,
   Phone,
   Mail,
@@ -33,15 +40,30 @@ export function CombinedFooter() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError('');
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1400));
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        {
+          from_name:    formState.name,
+          from_email:   formState.email,
+          from_phone:   formState.phone,
+          from_company: formState.company,
+          message:      formState.message,
+        },
+        EMAILJS_PUBLIC_KEY
+      );
       setIsSubmitted(true);
       setFormState({ name: '', email: '', phone: '', company: '', message: '' });
+    } catch (err) {
+      setError('Something went wrong. Please try again or email us directly.');
     } finally {
       setIsSubmitting(false);
     }
@@ -55,10 +77,9 @@ export function CombinedFooter() {
       <div className="max-w-6xl mx-auto px-3 md:px-4">
         <div className="grid lg:grid-cols-2 gap-14 lg:gap-16">
 
-          {/* LEFT – INFO + LINKS + SOCIAL (was right) */}
+          {/* LEFT: INFO + LINKS + SOCIAL */}
           <div className="space-y-10">
 
-            {/* Contact Info */}
             <div>
               <h3 className="font-serif text-xl md:text-2xl text-[#F3F3F2] mb-5">
                 Contact Info
@@ -69,23 +90,22 @@ export function CombinedFooter() {
                   className="flex items-center gap-3 hover:text-[#CDFF00] transition-colors"
                 >
                   <Mail className="w-5 h-5 text-[#CDFF00]" />
-                  Info@sndmedia.co
+                  <span>Info@sndmedia.co</span>
                 </a>
                 <a
                   href="tel:+447962696177"
                   className="flex items-center gap-3 hover:text-[#CDFF00] transition-colors"
                 >
                   <Phone className="w-5 h-5 text-[#CDFF00]" />
-                  +44 7962 696177
+                  <span>+44 7962 696177</span>
                 </a>
                 <div className="flex items-start gap-3">
                   <MapPin className="w-5 h-5 text-[#CDFF00] mt-1 flex-shrink-0" />
-                  32 Hollywall Ln, Stoke-on-Trent ST6 5PP, UK
+                  <span>32 Hollywall Ln, Stoke-on-Trent ST6 5PP, UK</span>
                 </div>
               </div>
             </div>
 
-            {/* Quick Links */}
             <div>
               <h3 className="font-serif text-xl md:text-2xl text-[#F3F3F2] mb-5">
                 Quick Links
@@ -98,14 +118,14 @@ export function CombinedFooter() {
               </div>
             </div>
 
-            {/* Social */}
             <div>
               <h3 className="font-serif text-xl md:text-2xl text-[#F3F3F2] mb-5">
                 Follow Us
               </h3>
               <div className="flex gap-4">
-                {footerConfig.socialLinks?.map((social) => {
-                  const Icon = iconMap[social.icon as keyof typeof iconMap];
+                {footerConfig.socialLinks.map((social) => {
+                  const Icon = iconMap[social.icon as IconName];
+                  if (!Icon) return null;
                   return (
                     <a
                       key={social.label}
@@ -114,28 +134,29 @@ export function CombinedFooter() {
                       rel="noopener noreferrer"
                       className="w-11 h-11 rounded-lg bg-[#363432] flex items-center justify-center text-[#DADADA] hover:bg-[#CDFF00] hover:text-[#222120] transition-colors"
                     >
-                      {Icon && <Icon className="w-5 h-5" />}
+                      <Icon className="w-5 h-5" />
                     </a>
                   );
                 })}
               </div>
             </div>
+
           </div>
 
-          {/* RIGHT – CONTACT FORM (was left) */}
+          {/* RIGHT: CONTACT FORM */}
           <div>
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#F3F3F2] mb-3">
               Send Us a <span className="text-[#CDFF00]">Message</span>
             </h2>
             <p className="text-[#DADADA] mb-8 text-base">
-              Fill out the form below and we'll get back to you within 24 hours
+              Fill out the form below and we will get back to you within 24 hours
             </p>
 
             {isSubmitted ? (
               <div className="text-center py-12 bg-[#363432]/40 rounded-xl border border-[#4A4845]/50">
                 <CheckCircle className="w-14 h-14 text-[#CDFF00] mx-auto mb-4" />
                 <h3 className="text-2xl font-serif text-[#F3F3F2] mb-2">Message Sent!</h3>
-                <p className="text-[#DADADA]">Thank you — we'll be in touch soon.</p>
+                <p className="text-[#DADADA]">Thank you, we will be in touch soon.</p>
               </div>
             ) : (
               <form onSubmit={handleContactSubmit} className="space-y-5">
@@ -184,22 +205,26 @@ export function CombinedFooter() {
                   className="w-full px-5 py-3.5 bg-[#363432] border border-[#4A4845] rounded-lg text-[#F3F3F2] placeholder-[#8a8885] focus:border-[#CDFF00] focus:outline-none transition-all resize-none"
                 />
 
+                {error && (
+                  <p className="text-red-400 text-sm">{error}</p>
+                )}
+
                 <button
                   type="submit"
                   disabled={isSubmitting}
                   className="px-9 py-3.5 bg-[#CDFF00] text-[#222120] font-medium rounded-lg hover:bg-[#b8e600] transition-colors disabled:opacity-60 flex items-center gap-2.5"
                 >
-                  {isSubmitting ? 'Sending...' : 'Send Message'}
+                  <span>{isSubmitting ? 'Sending...' : 'Send Message'}</span>
                   {!isSubmitting && <Send size={18} />}
                 </button>
               </form>
             )}
           </div>
+
         </div>
 
-        {/* Bottom */}
         <div className="mt-8 pt-6 border-t border-[#363432] text-center text-sm text-[#8a8885]">
-          © 2026 S&D Media. All rights reserved.
+          <span>2026 S and D Media. All rights reserved.</span>
         </div>
       </div>
     </section>
