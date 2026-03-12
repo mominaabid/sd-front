@@ -14,29 +14,27 @@
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23d2a855'%3E%3Cpath d='M12 2c1 0 9.5 5.1 9.5 11.7 0 4.1-4.4 7.3-9.5 7.3S2.5 17.8 2.5 13.7C2.5 7.1 11 2 12 2z'/%3E%3C/svg%3E" />
 
-    <!-- Meta Pixel Base Code -->
-    <script>
-      !function(f,b,e,v,n,t,s){
-        if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-        n.queue=[];t=b.createElement(e);t.async=!0;
-        t.src=v;s=b.getElementsByTagName(e)[0];
-        s.parentNode.insertBefore(t,s)
-      }(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-
-      fbq('init', '4501512696744039');
-      fbq('track', 'PageView');
-    </script>
-    <!-- End Meta Pixel Base Code -->
+    <!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '952071220719321');
+fbq('track', 'PageView');
+</script>
+<!-- End Meta Pixel Code -->
   </head>
 
   <body>
     <!-- Meta Pixel Noscript -->
-    <noscript>
-      <img height="1" width="1" style="display:none"
-        src="https://www.facebook.com/tr?id=4501512696744039&ev=PageView&noscript=1"/>
-    </noscript>
+    <noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=952071220719321&ev=PageView&noscript=1"
+/></noscript>
 
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

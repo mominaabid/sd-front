@@ -262,6 +262,13 @@ export default function Pricing() {
                     )}
                   </div>
 
+                  {card.card_type === 'bundle' && (
+                    <div className="flex flex-col items-center mt-4 mb-2">
+                      <span className="text-xl text-white font-semibold">$499</span>
+                      <span className="text-xs text-[#DADADA] mt-1">Turnaround time = 7–8 Working Days</span>
+                    </div>
+                  )}
+
                   <div className="pc-btn-wrap">
                     <button
                       onClick={() => setSelectedPlan(card)}

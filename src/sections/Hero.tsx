@@ -77,17 +77,7 @@ export function Hero({ isReady = true }: HeroProps) {
   return (
     <>
       <style>{`
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap');
-
-@font-face {
-  font-family: "Porto";
-  src: url("/fonts/Porto-Regular.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Auriga";
-  src: url("/fonts/Auriga-Regular.woff2") format("woff2");
-}
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
         :root {
           --lime: #C8F400;
           --dark: #141312;
@@ -101,7 +91,7 @@ export function Hero({ isReady = true }: HeroProps) {
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-           font-family:'Porto', sans-serif;
+         font-family: 'Space Grotesk', sans-serif;  
           background: var(--dark);
           color: var(--light);
           overflow-x: hidden;
@@ -361,7 +351,7 @@ export function Hero({ isReady = true }: HeroProps) {
         }
 
         .hero-title {
-          font-family:'Auriga', serif;
+          font-family: 'Bodoni Moda', serif; 
           font-size: clamp(2.2rem,5vw,4.1rem);
           font-weight:700;
           letter-spacing:-0.25px;
@@ -386,7 +376,7 @@ export function Hero({ isReady = true }: HeroProps) {
         }
 
         .hero-subtitle {
-          font-family:'Porto', sans-serif;
+          font-family: 'Space Grotesk', sans-serif; 
           font-size:clamp(0.9rem,1.5vw,1.05rem);
           font-weight:600;
           color: white;
@@ -423,7 +413,7 @@ export function Hero({ isReady = true }: HeroProps) {
           color: #111;
           padding: clamp(12px, 1.5vw, 14px) clamp(22px, 3vw, 30px);
           border-radius: var(--radius);
-          font-family:'Auriga', serif;
+          font-family: 'Bodoni Moda', serif;
           font-weight:600;
           font-size: clamp(0.83rem, 1.3vw, 0.92rem);
           text-decoration: none;
@@ -445,7 +435,7 @@ export function Hero({ isReady = true }: HeroProps) {
           color: rgba(240,237,232,0.75);
           padding: clamp(11px, 1.4vw, 13px) clamp(22px, 3vw, 30px);
           border-radius: var(--radius);
-          font-family:'Auriga', serif;
+          font-family: 'Bodoni Moda', serif;
           font-weight:600;
           text-decoration: none;
           letter-spacing: 0.2px;

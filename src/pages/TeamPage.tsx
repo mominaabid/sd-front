@@ -179,6 +179,8 @@ export function TeamPage() {
           --muted:    rgba(240,237,232,0.5);
           --nav-h:    72px;
           --r:        12px;
+          --section-px: clamp(16px, 4vw, 32px);
+          --section-max: 1280px;
         }
 
         body { font-family: 'Outfit', sans-serif; -webkit-font-smoothing: antialiased; }
@@ -281,8 +283,19 @@ export function TeamPage() {
         .tp-header .tp-fade:nth-child(2) { transition-delay: 120ms; }
         .tp-header .tp-fade:nth-child(3) { transition-delay: 220ms; }
 
+        /* ── SHARED CONTENT WIDTH — both sections use this ── */
+        .tp-content-wrap {
+          max-width: var(--section-max);
+          margin: 0 auto;
+          padding-left: var(--section-px);
+          padding-right: var(--section-px);
+        }
+
         /* ── TEAM GRID ── */
-        .tp-team-section { padding: clamp(40px,7vw,80px) clamp(16px,4vw,32px); max-width: 1280px; margin:0 auto; }
+        .tp-team-section {
+          padding-top: clamp(40px,7vw,80px);
+          padding-bottom: clamp(40px,7vw,80px);
+        }
         .tp-team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: clamp(12px,2vw,24px); }
 
         /* ── TEAM CARD ── */
@@ -290,7 +303,6 @@ export function TeamPage() {
           position: relative; border-radius: 14px; overflow: hidden;
           background: var(--dark-sur);
           box-shadow: 0 4px 24px rgba(0,0,0,0.3);
-          /* NO cursor:pointer — not clickable */
           transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
           will-change: transform;
           transform: translateZ(0);
@@ -306,20 +318,11 @@ export function TeamPage() {
         }
         .tp-card:hover .tp-card-img-wrap img { transform: scale(1.08) translateZ(0); }
 
-        /* Default label — fades out on hover */
         .tp-card-label {
-          position:absolute; inset:0;
-          height: 100%;
+          position:absolute; inset:0; height: 100%;
           padding: 0 clamp(12px,3vw,18px) clamp(12px,2vw,16px);
           display: flex; flex-direction: column; justify-content: flex-end;
-          background: linear-gradient(
-            to top,
-            rgba(0,0,0,0.88) 0%,
-            rgba(0,0,0,0.65) 25%,
-            rgba(0,0,0,0.30) 55%,
-            rgba(0,0,0,0.08) 80%,
-            transparent 100%
-          );
+          background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.65) 25%, rgba(0,0,0,0.30) 55%, rgba(0,0,0,0.08) 80%, transparent 100%);
           transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1);
           will-change: opacity;
         }
@@ -327,41 +330,22 @@ export function TeamPage() {
         .tp-card-label h4 { font-family: 'Cormorant Garamond', serif; font-size: clamp(1rem,2vw,1.2rem); font-weight:400; margin-bottom:4px; }
         .tp-card-label p { color:var(--lime); font-size:0.78rem; font-weight:500; }
 
-        /* ── HOVER OVERLAY — key fix: start fully transparent, no background jump ── */
         .tp-card-overlay {
-          position: absolute;
-          inset: 0;
-          /* Use a semi-transparent dark color from the start — only opacity animates */
+          position: absolute; inset: 0;
           background: rgba(10, 9, 8, 0.91);
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-end;
+          display: flex; flex-direction: column; justify-content: flex-end;
           padding: clamp(14px,3vw,20px);
-          /* Start invisible */
           opacity: 0;
-          /* Single transition on opacity only — smooth fade in/out */
           transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1);
           will-change: opacity;
-          /* No transform animation — eliminates the "snap" feel */
         }
         .tp-card:hover .tp-card-overlay { opacity: 1; }
-
-        /* Content inside overlay slides up subtly */
-        .tp-card-overlay > * {
-          transform: translateY(8px);
-          transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1);
-          opacity: 0;
-        }
-        .tp-card:hover .tp-card-overlay > * {
-          transform: translateY(0);
-          opacity: 1;
-        }
-        /* Stagger children inside overlay */
+        .tp-card-overlay > * { transform: translateY(8px); transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1); opacity: 0; }
+        .tp-card:hover .tp-card-overlay > * { transform: translateY(0); opacity: 1; }
         .tp-card:hover .tp-card-overlay > *:nth-child(1) { transition-delay: 0.05s; }
         .tp-card:hover .tp-card-overlay > *:nth-child(2) { transition-delay: 0.10s; }
         .tp-card:hover .tp-card-overlay > *:nth-child(3) { transition-delay: 0.15s; }
         .tp-card:hover .tp-card-overlay > *:nth-child(4) { transition-delay: 0.20s; }
-
         .tp-card-overlay h4 { font-family:'Cormorant Garamond',serif; font-size:clamp(1rem,2vw,1.2rem); font-weight:400; margin-bottom:4px; color: var(--light); }
         .tp-card-overlay .tp-role { color:var(--lime); font-size:0.78rem; margin-bottom:10px; }
         .tp-card-overlay .tp-bio { color:rgba(240,237,232,0.75); font-size:0.78rem; line-height:1.6; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:10px; }
@@ -383,8 +367,11 @@ export function TeamPage() {
         .tp-section-title .tp-rule { width:40px; height:1px; margin:12px auto 0; background:linear-gradient(90deg,var(--lime),transparent); }
 
         /* ── BTS ── */
-        .tp-bts-section { background:#1a1815; padding: clamp(40px,7vw,80px) clamp(16px,4vw,32px); }
-        .tp-bts-inner { max-width:1280px; margin:0 auto; }
+        .tp-bts-section {
+          background:#1a1815;
+          padding-top: clamp(40px,7vw,80px);
+          padding-bottom: clamp(40px,7vw,80px);
+        }
         .tp-bts-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(min(260px,100%), 1fr)); gap: clamp(10px,2vw,20px); }
         .tp-bts-item { position:relative; border-radius:12px; overflow:hidden; cursor:pointer; background:var(--dark-sur); box-shadow:0 4px 16px rgba(0,0,0,0.3); transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); will-change: transform; transform: translateZ(0); }
         .tp-bts-item:hover { transform: translateY(-4px) translateZ(0); box-shadow:0 14px 36px rgba(0,0,0,0.5); }
@@ -487,49 +474,42 @@ export function TeamPage() {
 
       {/* Team Grid */}
       <div className="tp-team-section">
-        {loadingTeam ? (
-          <div className="tp-state">Loading team members…</div>
-        ) : errorTeam ? (
-          <div className="tp-state error">{errorTeam}</div>
-        ) : (
-          <div className="tp-team-grid">
-            {teamMembers.map((member) => (
-              <div key={member.id} className="tp-fade tp-card">
-                <div className="tp-card-img-wrap">
-                  <img src={member.picture} alt={member.name} loading="lazy" />
+        <div className="tp-content-wrap">
+          {loadingTeam ? (
+            <div className="tp-state">Loading team members…</div>
+          ) : errorTeam ? (
+            <div className="tp-state error">{errorTeam}</div>
+          ) : (
+            <div className="tp-team-grid">
+              {teamMembers.map((member) => (
+                <div key={member.id} className="tp-fade tp-card">
+                  <div className="tp-card-img-wrap">
+                    <img src={member.picture} alt={member.name} loading="lazy" />
+                  </div>
+                  <div className="tp-card-label">
+                    <h4>{member.name}</h4>
+                    <p>{member.role}</p>
+                  </div>
+                  <div className="tp-card-overlay">
+                    <h4>{member.name}</h4>
+                    <p className="tp-role">{member.role}</p>
+                    <p className="tp-bio">{member.bio}</p>
+                    {member.linkedin_url && (
+                      <a href={member.linkedin_url} target="_blank" rel="noopener noreferrer" className="tp-li-link">
+                        <Linkedin size={15} /> LinkedIn
+                      </a>
+                    )}
+                  </div>
                 </div>
-
-                {/* Default label */}
-                <div className="tp-card-label">
-                  <h4>{member.name}</h4>
-                  <p>{member.role}</p>
-                </div>
-
-                {/* Hover overlay */}
-                <div className="tp-card-overlay">
-                  <h4>{member.name}</h4>
-                  <p className="tp-role">{member.role}</p>
-                  <p className="tp-bio">{member.bio}</p>
-                  {member.linkedin_url && (
-                    <a
-                      href={member.linkedin_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="tp-li-link"
-                    >
-                      <Linkedin size={15} /> LinkedIn
-                    </a>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* BTS Section */}
       <div className="tp-bts-section">
-        <div className="tp-bts-inner">
+        <div className="tp-content-wrap">
           <div className="tp-fade tp-section-title">
             <h2>Behind-the-<em>Scenes</em></h2>
             <div className="tp-rule" />
