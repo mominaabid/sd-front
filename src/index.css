@@ -1,6 +1,6 @@
 /* postcss */
 /* Import fonts */
-@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Aboreto&family=League+Spartan:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -9,10 +9,11 @@
 /* ── Base styles ── */
 @layer base {
   /* Font utility classes */
-  .font-primary  { font-family: 'Bodoni Moda', serif; }
-  .font-secondary { font-family: 'Space Grotesk', sans-serif; }
-  .font-serif    { font-family: 'Bodoni Moda', serif; }
-  .font-sans     { font-family: 'Space Grotesk', sans-serif; }
+  .font-primary   { font-family: 'Aboreto', cursive; }
+  .font-secondary { font-family: 'League Spartan', sans-serif; }
+  .font-serif     { font-family: 'Aboreto', cursive; }
+  .font-sans      { font-family: 'League Spartan', sans-serif; }
+  .font-spartan   { font-family: 'League Spartan', sans-serif; }
 
   :root {
     /* S&D Media Color Palette */
@@ -58,29 +59,45 @@
   }
 
   body {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: 'League Spartan', sans-serif;
     background-color: var(--page-bg);
     color: var(--white-primary);
     overflow-x: hidden;
   }
 
-  p, span, li, a {
-    font-family: 'Space Grotesk', sans-serif;
+  /* Body text → League Spartan */
+  p, span, li, a, input, textarea, select, button {
+    font-family: 'League Spartan', sans-serif;
   }
 
+  /* All headings → Aboreto, letter-spacing 12% */
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Bodoni Moda', serif;
-    font-weight: 500;
+    font-family: 'Aboreto', cursive;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+  }
+
+  /* Green highlighted text in headings → always ALL CAPS */
+  h1 .text-\[\#CDFF00\],
+  h2 .text-\[\#CDFF00\],
+  h3 .text-\[\#CDFF00\],
+  h1 span[class*="text-primary"],
+  h2 span[class*="text-primary"],
+  h3 span[class*="text-primary"] {
+    text-transform: uppercase;
   }
 }
 
 /* ── Components ── */
 @layer components {
+  /* Primary button → League Spartan */
   .btn-primary {
     @apply px-8 py-3 text-sm font-medium tracking-wide transition-all duration-300;
     background-color: var(--neon-green);
     color: var(--grey-dark);
-    font-family: 'Bodoni Moda', serif;
+    font-family: 'League Spartan', sans-serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 
   .btn-primary:hover {
@@ -89,12 +106,15 @@
     box-shadow: 0 4px 20px rgba(205, 255, 0, 0.3);
   }
 
+  /* Dark/ghost button → League Spartan */
   .btn-dark {
     @apply px-8 py-3 text-sm font-medium tracking-wide transition-all duration-300;
     background-color: transparent;
     color: var(--white-primary);
     border: 1px solid var(--neon-green);
-    font-family: 'Bodoni Moda', serif;
+    font-family: 'League Spartan', sans-serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 
   .btn-dark:hover {

@@ -2,9 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { Play, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { API_BASE_URL } from '../constants/urls';
 
-// ─────────────────────────────────────────────────────────────
-// Type definitions
-// ─────────────────────────────────────────────────────────────
 interface Category {
   id: number;
   name: string;
@@ -21,16 +18,12 @@ interface Video {
   category: { id: number };
 }
 
-// ─────────────────────────────────────────────────────────────
-// Helper to normalize URLs
-// ─────────────────────────────────────────────────────────────
 const getMediaUrl = (url?: string) => {
   if (!url) return null;
   if (url.startsWith('http')) return url;
   return `${API_BASE_URL.replace('/api/v1/', '')}${url}`;
 };
 
-// ─────────────────────────────────────────────────────────────
 export function Portfolio() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [videos, setVideos] = useState<Video[]>([]);
@@ -43,7 +36,6 @@ export function Portfolio() {
   const sectionRef = useRef<HTMLElement>(null);
   const itemsPerPage = 6;
 
-  // ─── Fetch categories ──────────────────────────────────────────
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -60,7 +52,6 @@ export function Portfolio() {
     fetchCategories();
   }, []);
 
-  // ─── Fetch videos ──────────────────────────────────────────────
   useEffect(() => {
     if (categories.length === 0) return;
     const fetchVideos = async () => {
@@ -87,14 +78,12 @@ export function Portfolio() {
     fetchVideos();
   }, [activeTab, categories]);
 
-  // ─── Pagination ────────────────────────────────────────────────
   const totalPages = Math.ceil(videos.length / itemsPerPage);
   const paginatedVideos = videos.slice(
     currentPage * itemsPerPage,
     (currentPage + 1) * itemsPerPage
   );
 
-  // ─── Intersection Observer ─────────────────────────────────────
   useEffect(() => {
     const elements = document.querySelectorAll('.port-fade');
     const observer = new IntersectionObserver(
@@ -112,14 +101,12 @@ export function Portfolio() {
     return () => observer.disconnect();
   }, [paginatedVideos]);
 
-  // ─── Escape to close modal ─────────────────────────────────────
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelectedVideo(null); };
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
   }, []);
 
-  // ─── Page number pills to show ────────────────────────────────
   const getPageRange = () => {
     if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i);
     if (currentPage <= 2) return [0, 1, 2, 3, '...', totalPages - 1];
@@ -127,7 +114,6 @@ export function Portfolio() {
     return [0, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages - 1];
   };
 
-  // ─────────────────────────────────────────────────────────────
   return (
     <>
       <style>{`
@@ -141,7 +127,16 @@ export function Portfolio() {
           transform: translateY(0);
         }
 
-        /* ── Pagination ── */
+        /* Filter tabs — League Spartan, uppercase */
+        .port-tab {
+          font-family: 'League Spartan', sans-serif !important;
+          letter-spacing: 0.08em !important;
+          text-transform: uppercase !important;
+          font-size: 0.78rem !important;
+          font-weight: 500 !important;
+        }
+
+        /* Pagination */
         .pagination {
           display: flex;
           align-items: center;
@@ -151,8 +146,6 @@ export function Portfolio() {
           flex-wrap: wrap;
           padding: 0 12px;
         }
-
-        /* Prev / Next */
         .page-nav {
           display: inline-flex;
           align-items: center;
@@ -164,9 +157,10 @@ export function Portfolio() {
           border: 1px solid rgba(74,72,69,0.8);
           color: rgba(240,237,232,0.65);
           background: transparent;
+          font-family: 'League Spartan', sans-serif;
           font-size: 0.85rem;
           font-weight: 500;
-          letter-spacing: 0.2px;
+          letter-spacing: 0.06em;
           cursor: pointer;
           transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.2s, box-shadow 0.2s;
           white-space: nowrap;
@@ -179,20 +173,14 @@ export function Portfolio() {
           transform: translateY(-1px);
           box-shadow: 0 4px 16px rgba(205,255,0,0.12);
         }
-        .page-nav:disabled {
-          opacity: 0.3;
-          cursor: not-allowed;
-          pointer-events: none;
-        }
-
-        /* Number pills */
+        .page-nav:disabled { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
         .page-pill {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          width: 38px;
-          height: 38px;
+          width: 38px; height: 38px;
           border-radius: 8px;
+          font-family: 'League Spartan', sans-serif;
           font-size: 0.85rem;
           font-weight: 500;
           cursor: pointer;
@@ -204,38 +192,24 @@ export function Portfolio() {
           flex-shrink: 0;
         }
         .page-pill:hover:not(.active) {
-          background: rgba(205,255,0,0.1);
-          color: #fff;
-          border-color: rgba(205,255,0,0.25);
-          transform: translateY(-1px);
+          background: rgba(205,255,0,0.1); color: #fff;
+          border-color: rgba(205,255,0,0.25); transform: translateY(-1px);
         }
         .page-pill.active {
-          background: #CDFF00;
-          color: #111;
-          border-color: #CDFF00;
-          font-weight: 700;
-          box-shadow: 0 4px 14px rgba(205,255,0,0.3);
+          background: #CDFF00; color: #111; border-color: #CDFF00;
+          font-weight: 700; box-shadow: 0 4px 14px rgba(205,255,0,0.3);
         }
-
-        /* Ellipsis */
         .page-ellipsis {
-          width: 28px;
-          text-align: center;
-          color: rgba(240,237,232,0.3);
-          font-size: 0.9rem;
-          user-select: none;
-          pointer-events: none;
-          line-height: 38px;
+          width: 28px; text-align: center;
+          color: rgba(240,237,232,0.3); font-size: 0.9rem;
+          user-select: none; pointer-events: none; line-height: 38px;
         }
-
-        /* Mobile adjustments */
         @media (max-width: 480px) {
           .page-nav { width: 42px; height: 42px; padding: 0; border-radius: 10px; }
           .page-nav-label { display: none; }
           .page-pill { width: 34px; height: 34px; font-size: 0.8rem; border-radius: 7px; }
           .pagination { gap: 4px; margin-top: 36px; }
         }
-
         @media (max-width: 360px) {
           .page-pill { width: 30px; height: 30px; font-size: 0.75rem; }
           .page-nav { width: 38px; height: 38px; }
@@ -250,20 +224,29 @@ export function Portfolio() {
       >
         <div className="container mx-auto px-6">
 
-          {/* Header */}
+          {/* Header — white in League Spartan, green word in Aboreto uppercase */}
           <div className="port-fade text-center mb-12">
-            <h2 className="text-3xl md:text-5xl font-display font-bold mb-4">
-              Our <span className="text-primary">Portfolio</span>
-            </h2>
+            <h2
+  className="text-3xl md:text-5xl mb-4"
+  style={{ fontFamily: "'League Spartan', sans-serif", letterSpacing: '0.02em' }}
+>
+  Our{' '}
+  <span
+    className="text-[#CDFF00] font-bold"
+    style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.12em', textTransform: 'uppercase' }}
+  >
+    PORTFOLIO
+  </span>
+</h2>
           </div>
 
-          {/* Tabs */}
+          {/* Filter Tabs — League Spartan, uppercase */}
           <div className="port-fade flex flex-wrap justify-center gap-3 mb-12">
             {categories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setActiveTab(cat.name)}
-                className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
+                className={`port-tab px-5 py-2 rounded-full transition-all ${
                   activeTab === cat.name
                     ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/30'
                     : 'bg-[#363432] text-gray-300 hover:text-white border border-gray-600 hover:border-primary/50'
@@ -283,7 +266,6 @@ export function Portfolio() {
             <div className="text-center py-20 text-gray-400 text-xl">No videos found in this category.</div>
           ) : (
             <>
-              {/* Grid */}
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
                 {paginatedVideos.map((item, index) => (
                   <div
@@ -293,10 +275,10 @@ export function Portfolio() {
                     onClick={() => setSelectedVideo(item)}
                   >
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-  <div className="w-16 h-16 rounded-full bg-[#CDFF00]/80 flex items-center justify-center shadow-lg shadow-[#CDFF00]/30 transform group-hover:scale-110 transition-transform">
-    <Play className="w-8 h-8 text-[#222120] fill-[#222120] ml-1" />
-  </div>
-</div>
+                      <div className="w-16 h-16 rounded-full bg-[#CDFF00]/80 flex items-center justify-center shadow-lg shadow-[#CDFF00]/30 transform group-hover:scale-110 transition-transform">
+                        <Play className="w-8 h-8 text-[#222120] fill-[#222120] ml-1" />
+                      </div>
+                    </div>
                     <div className="w-full h-full overflow-hidden">
                       {item.thumbnail_url ? (
                         <img
@@ -315,31 +297,33 @@ export function Portfolio() {
                       ) : (
                         <video
                           src={getMediaUrl(item.video_url || item.video_file) || ''}
-                          muted
-                          preload="metadata"
+                          muted preload="metadata"
                           className="w-full h-full object-cover"
                         />
                       )}
                     </div>
-
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-
                     <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/90 to-transparent">
-                      <p className="text-xs text-[#CDFF00] font-medium uppercase tracking-wider mb-1">
+                      <p
+                        className="text-xs text-[#CDFF00] font-medium uppercase tracking-wider mb-1"
+                        style={{ fontFamily: "'League Spartan', sans-serif" }}
+                      >
                         {categories.find((c) => c.id === item.category.id)?.name || 'Video'}
                       </p>
-                      <h4 className="font-display font-semibold text-white text-lg">{item.title}</h4>
+                      <h4
+                        className="font-semibold text-white text-lg"
+                        style={{ fontFamily: "'League Spartan', sans-serif" }}
+                      >
+                        {item.title}
+                      </h4>
                       {item.couple && <p className="text-sm text-gray-300 mt-1">{item.couple}</p>}
                     </div>
                   </div>
                 ))}
               </div>
 
-              {/* Pagination */}
               {totalPages > 1 && (
                 <nav className="pagination" aria-label="Portfolio pages">
-
-                  {/* Previous */}
                   <button
                     className="page-nav"
                     onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
@@ -349,8 +333,6 @@ export function Portfolio() {
                     <ChevronLeft size={16} />
                     <span className="page-nav-label">Previous</span>
                   </button>
-
-                  {/* Page numbers */}
                   {getPageRange().map((item, i) =>
                     item === '...' ? (
                       <span key={`ellipsis-${i}`} className="page-ellipsis">…</span>
@@ -366,8 +348,6 @@ export function Portfolio() {
                       </button>
                     )
                   )}
-
-                  {/* Next */}
                   <button
                     className="page-nav"
                     onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
@@ -377,7 +357,6 @@ export function Portfolio() {
                     <span className="page-nav-label">Next</span>
                     <ChevronRight size={16} />
                   </button>
-
                 </nav>
               )}
             </>
@@ -385,46 +364,41 @@ export function Portfolio() {
         </div>
       </section>
 
-      {/* ─────────────────────────── Video Popup ─────────────────────────── */}
-{/* Video Popup */}
-{selectedVideo && (
-  <div
-    className="fixed inset-0 z-[9999] flex items-start justify-center px-4 pt-20 pb-8 bg-black/80 backdrop-blur-sm transition-opacity duration-300"
-    onClick={() => setSelectedVideo(null)}
-  >
-    <div
-      className="relative w-full max-w-4xl rounded-2xl overflow-hidden shadow-2xl bg-[#111111] transform transition-all duration-300 scale-100 sm:scale-105"
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* Close Button */}
-      <button
-        onClick={() => setSelectedVideo(null)}
-        className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-[#CDFF00] hover:text-black transition-all duration-200 shadow-lg"
-      >
-        <X className="w-5 h-5" />
-      </button>
-
-      {/* Video */}
-      <video
-        key={selectedVideo.id}
-        src={getMediaUrl(selectedVideo.video_url || selectedVideo.video_file) || ''}
-        className="w-full h-auto max-h-[70vh] object-contain bg-black"
-        controls
-        autoPlay
-      />
-
-      {/* Info */}
-      <div className="p-4 text-center bg-[#1a1a1a]">
-        <h3 className="text-xl md:text-2xl font-bold text-white mb-1">
-          {selectedVideo.title}
-        </h3>
-        {selectedVideo.couple && (
-          <p className="text-gray-300 text-base md:text-lg">{selectedVideo.couple}</p>
-        )}
-      </div>
-    </div>
-  </div>
-)}
+      {selectedVideo && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-start justify-center px-4 pt-20 pb-8 bg-black/80 backdrop-blur-sm transition-opacity duration-300"
+          onClick={() => setSelectedVideo(null)}
+        >
+          <div
+            className="relative w-full max-w-4xl rounded-2xl overflow-hidden shadow-2xl bg-[#111111] transform transition-all duration-300 scale-100 sm:scale-105"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setSelectedVideo(null)}
+              className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-[#CDFF00] hover:text-black transition-all duration-200 shadow-lg"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <video
+              key={selectedVideo.id}
+              src={getMediaUrl(selectedVideo.video_url || selectedVideo.video_file) || ''}
+              className="w-full h-auto max-h-[70vh] object-contain bg-black"
+              controls autoPlay
+            />
+            <div className="p-4 text-center bg-[#1a1a1a]">
+              <h3
+                className="text-xl md:text-2xl font-bold text-white mb-1"
+                style={{ fontFamily: "'League Spartan', sans-serif" }}
+              >
+                {selectedVideo.title}
+              </h3>
+              {selectedVideo.couple && (
+                <p className="text-gray-300 text-base md:text-lg">{selectedVideo.couple}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

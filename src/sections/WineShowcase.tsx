@@ -40,10 +40,18 @@ export function WineShowcase() {
 
         {/* Header */}
         <div className="text-center mb-16">
-          <h2 className="fade-up text-3xl md:text-5xl font-primary font-bold mb-4 text-white">
-            Built Specifically for{' '}
-            <span className="text-[#CDFF00]">Wedding Videographers</span>
-          </h2>
+         <h2
+  className="fade-up text-3xl md:text-5xl mb-4 text-white"
+  style={{ fontFamily: "'League Spartan', sans-serif", letterSpacing: '0.02em' }}
+>
+  Built Specifically for{' '}
+  <span
+    className="text-[#CDFF00] font-bold"
+    style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.12em', textTransform: 'uppercase' }}
+  >
+    WEDDING VIDEOGRAPHERS
+  </span>
+</h2>
           <p className="fade-up font-secondary text-[#DADADA] text-lg max-w-2xl mx-auto" style={{ transitionDelay: '120ms' }}>
             {builtForConfig.subtitle}
           </p>
@@ -73,9 +81,12 @@ export function WineShowcase() {
                   <Sparkles className="w-8 h-8 text-[#CDFF00] mb-4 group-hover:drop-shadow-[0_0_8px_rgba(205,255,0,0.5)] transition-all" />
                 )}
 
-                <h3 className="text-xl font-primary font-semibold mb-3 text-white">
-                  {feature.title}
-                </h3>
+                <h3
+  className="text-xl font-semibold mb-3 text-white"
+  style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.04em' }}
+>
+  {feature.title}
+</h3>
                 <p className="font-secondary text-[#DADADA] leading-relaxed">
                   {feature.description}
                 </p>

@@ -55,8 +55,9 @@ export function Museum() {
 
         {/* Header */}
         <div className="museum-fade text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-primary font-bold mb-4 text-white">
-            What Makes Us <span className="text-[#CDFF00]">Special?</span>
+          <h2 className="text-3xl md:text-5xl mb-4 text-white" style={{ fontFamily: "'League Spartan', sans-serif", letterSpacing: '0.02em' }}>
+            What Makes Us{' '}
+            <span className="text-[#CDFF00] font-bold" style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.12em', textTransform: 'uppercase' }}>Special?</span>
           </h2>
           <p className="font-secondary text-[#DADADA] text-lg max-w-2xl mx-auto">
             Six reasons wedding videographers trust us with their clients footage.
@@ -78,7 +79,8 @@ export function Museum() {
                   <Icon className="w-5 h-5 text-primary" />
                 </div>
 
-                <h3 className="text-lg font-primary font-semibold mb-1 uppercase tracking-wide text-white">
+                {/* Mini heading — League Spartan for readability */}
+                <h3 className="text-lg font-semibold mb-1 uppercase tracking-[0.12em] text-white" style={{ fontFamily: "'League Spartan', sans-serif" }}>
                   {feature.title}
                 </h3>
 

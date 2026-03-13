@@ -64,7 +64,10 @@ export function TrustedBy() {
         `}
       </style>
 
-      <h3 className="text-center text-l font-bold tracking-[0.22em] uppercase text-white mb-12">
+      <h3
+  className="text-center text-l font-bold uppercase text-white mb-12"
+  style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.12em' }}
+>
   Trusted By Leading Wedding Videographers
 </h3>
 

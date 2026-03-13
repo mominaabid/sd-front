@@ -67,6 +67,15 @@ export function Hero({ isReady = true }: HeroProps) {
   const heading = heroData?.heading || fallbackData.heading;
   const subtitle = heroData?.subtitle || fallbackData.subtitle;
 
+  // Always split after "Films" so line1="Wedding Films", line2="That Couples Remember"
+  const filmsIdx = heading.toLowerCase().indexOf("films");
+  const headingLine1 = filmsIdx !== -1
+    ? heading.slice(0, filmsIdx + 5).trim()
+    : heading.split("\n")[0]?.trim() || heading;
+  const headingLine2 = filmsIdx !== -1
+    ? heading.slice(filmsIdx + 5).replace(/\n/g, " ").trim().replace(/\.$/, "")
+    : heading.split("\n")[1]?.trim() || "";
+
   const navLinks = [
     { label: "Home", href: "#home", type: "anchor" },
     { label: "Portfolio", href: "#portfolio", type: "anchor" },
@@ -77,7 +86,8 @@ export function Hero({ isReady = true }: HeroProps) {
   return (
     <>
       <style>{`
-@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Aboreto&family=League+Spartan:wght@300;400;500;600;700&display=swap');
+
         :root {
           --lime: #C8F400;
           --dark: #141312;
@@ -91,7 +101,7 @@ export function Hero({ isReady = true }: HeroProps) {
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-         font-family: 'Space Grotesk', sans-serif;  
+          font-family: 'League Spartan', sans-serif;
           background: var(--dark);
           color: var(--light);
           overflow-x: hidden;
@@ -161,6 +171,7 @@ export function Hero({ isReady = true }: HeroProps) {
           color: #111 !important;
           padding: 10px 20px !important;
           border-radius: var(--radius) !important;
+          font-family: 'League Spartan', sans-serif !important;
           font-weight: 600 !important;
           font-size: 0.85rem !important;
           white-space: nowrap;
@@ -274,6 +285,7 @@ export function Hero({ isReady = true }: HeroProps) {
           color: #111;
           padding: 15px;
           border-radius: var(--radius);
+          font-family: 'League Spartan', sans-serif;
           font-weight: 600;
           font-size: 0.95rem;
           text-decoration: none;
@@ -326,74 +338,89 @@ export function Hero({ isReady = true }: HeroProps) {
           width: 100%;
         }
 
+        /* Eyebrow — Aboreto, letter-spacing 12%, lime green with — dashes */
         .hero-eyebrow {
           display: inline-flex;
           align-items: center;
-          gap: 12px;
+          gap: 14px;
           color: var(--lime);
-          font-size: clamp(0.68rem, 1.15vw, 0.76rem);
-          font-weight: 500;
-          letter-spacing: 3.5px;
+          font-family: 'Aboreto', cursive;
+          font-size: clamp(0.75rem, 1.2vw, 0.9rem);
+          font-weight: 400;
+          letter-spacing: 0.18em;
           text-transform: uppercase;
+          margin-bottom: clamp(14px, 2.5vw, 22px);
           opacity: 0;
           transform: translateY(10px);
           animation: fadeUp 0.7s ease forwards 0.1s;
         }
-
         .hero-eyebrow::before,
         .hero-eyebrow::after {
-          content: '';
-          display: block;
-          width: 28px;
-          height: 1px;
-          background: var(--lime);
-          opacity: 0.55;
+          content: '——';
+          color: var(--lime);
+          opacity: 0.7;
+          font-family: sans-serif;
+          letter-spacing: -2px;
+          font-size: 0.8em;
         }
 
+        /* Hero title wrapper */
         .hero-title {
-          font-family: 'Bodoni Moda', serif; 
-          font-size: clamp(2.2rem,5vw,4.1rem);
-          font-weight:700;
-          letter-spacing:-0.25px;
-          line-height:1.05;
-          white-space: pre-line;
-          margin: clamp(18px, 3vw, 26px) 0 clamp(12px, 2vw, 18px);
-          color: var(--light);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0;
+          margin: 0 0 clamp(16px, 2.5vw, 24px);
           opacity: 0;
           transform: translateY(16px);
           animation: fadeUp 0.95s ease forwards 0.3s;
-        }
-        .hero-title em {
-          color: var(--lime);
-        }
-
-        .hero-rule {
-          width: 40px; height: 1px;
-          background: linear-gradient(90deg, var(--lime), transparent);
-          margin: 0 auto clamp(12px, 2vw, 18px);
-          opacity: 0;
-          animation: fadeIn 0.6s ease forwards 0.55s;
+          text-align: center;
+          width: 100%;
         }
 
+        /* Line 1 — "WEDDING FILMS" large display */
+        .hero-title-line1 {
+          font-family: 'Aboreto', cursive;
+          font-size: clamp(2rem, 5.5vw, 4.4rem);
+          font-weight: 400;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          line-height: 1.0;
+          color: var(--light);
+          display: block;
+          width: 100%;
+          text-align: center;
+        }
+
+        /* Line 2 — "THAT COUPLES REMEMBER" smaller, sits tight below */
+        .hero-title-line2 {
+          font-family: 'Aboreto', cursive;
+          font-size: clamp(1rem, 2.8vw, 2.2rem);
+          font-weight: 400;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          line-height: 1.2;
+          color: var(--light);
+          display: block;
+          width: 100%;
+          text-align: center;
+          margin-top: 2px;
+        }
+
+        /* Subtitle — League Spartan, ALL CAPS, very small, muted, tight */
         .hero-subtitle {
-          font-family: 'Space Grotesk', sans-serif; 
-          font-size:clamp(0.9rem,1.5vw,1.05rem);
-          font-weight:600;
-          color: white;
-          letter-spacing: 0.3px;
-          margin-bottom: 10px;
+          font-family: 'League Spartan', sans-serif;
+          font-size: clamp(0.7rem, 1.2vw, 0.9rem);
+          font-weight: 400;
+          color: #ffffff;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          line-height: 1.85;
+          text-align: center;
+          max-width: 620px;
+          margin: 0 auto clamp(28px, 4vw, 44px);
           opacity: 0;
           animation: fadeUp 0.7s ease forwards 0.55s;
-        }
-
-        .hero-desc {
-          font-size: clamp(0.82rem, 1.4vw, 0.92rem);
-          color: rgba(240,237,232,0.38);
-          line-height: 1.75;
-          max-width: 500px;
-          margin: 0 auto clamp(32px, 5vw, 48px);
-          opacity: 0;
-          animation: fadeUp 0.7s ease forwards 0.7s;
         }
 
         .hero-actions {
@@ -406,6 +433,7 @@ export function Hero({ isReady = true }: HeroProps) {
           animation: fadeUp 0.7s ease forwards 0.85s;
         }
 
+        /* Buttons — League Spartan */
         .btn-lime {
           position: relative; overflow: hidden;
           display: inline-flex; align-items: center; gap: 9px;
@@ -413,11 +441,12 @@ export function Hero({ isReady = true }: HeroProps) {
           color: #111;
           padding: clamp(12px, 1.5vw, 14px) clamp(22px, 3vw, 30px);
           border-radius: var(--radius);
-          font-family: 'Bodoni Moda', serif;
-          font-weight:600;
-          font-size: clamp(0.83rem, 1.3vw, 0.92rem);
+          font-family: 'League Spartan', sans-serif;
+          font-weight: 600;
+          font-size: clamp(0.8rem, 1.2vw, 0.88rem);
           text-decoration: none;
-          letter-spacing: 0.2px;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
           transition: transform 0.25s, box-shadow 0.25s;
         }
         .btn-lime::before {
@@ -435,10 +464,12 @@ export function Hero({ isReady = true }: HeroProps) {
           color: rgba(240,237,232,0.75);
           padding: clamp(11px, 1.4vw, 13px) clamp(22px, 3vw, 30px);
           border-radius: var(--radius);
-          font-family: 'Bodoni Moda', serif;
-          font-weight:600;
+          font-family: 'League Spartan', sans-serif;
+          font-weight: 600;
+          font-size: clamp(0.8rem, 1.2vw, 0.88rem);
           text-decoration: none;
-          letter-spacing: 0.2px;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
           transition: border-color 0.25s, color 0.25s, background 0.25s;
         }
         .btn-ghost:hover { border-color: rgba(200,244,0,0.45); color: var(--light); background: rgba(200,244,0,0.05); }
@@ -491,6 +522,9 @@ export function Hero({ isReady = true }: HeroProps) {
           .hero-actions { flex-direction: column; align-items: stretch; }
           .btn-lime, .btn-ghost { justify-content: center; }
           .hero-scroll { display: none; }
+          .hero-title-line1 { font-size: clamp(1.6rem, 7vw, 2rem); letter-spacing: 0.08em; }
+          .hero-title-line2 { font-size: clamp(0.75rem, 3.5vw, 1rem); letter-spacing: 0.08em; }
+          .hero-subtitle { font-size: 0.65rem; letter-spacing: 0.1em; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -578,11 +612,16 @@ export function Hero({ isReady = true }: HeroProps) {
 
         <div className="hero-content">
           <span className="hero-eyebrow">Wedding Video Editing</span>
-          <h1 className="hero-title">
-            {heading.includes("Move") ? <>Wedding Films That Couples{"\n"} Remember.</> : heading}
-          </h1>
-          <div className="hero-rule" />
+
+          <div className="hero-title">
+            <span className="hero-title-line1">{headingLine1}</span>
+            {headingLine2 && (
+              <span className="hero-title-line2">{headingLine2}</span>
+            )}
+          </div>
+
           <p className="hero-subtitle">{subtitle}</p>
+
           <div className="hero-actions">
             <a href="#pricing" className="btn-lime">View Pricing →</a>
             <a href="#portfolio" className="btn-ghost">Watch Portfolio</a>

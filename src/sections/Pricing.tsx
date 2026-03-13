@@ -224,9 +224,18 @@ export default function Pricing() {
       <section id="pricing" className="section-padding bg-[#222120]">
         <div className="container-custom">
           <div className="text-center mb-16">
-            <h2 className="font-serif text-3xl md:text-5xl text-[#F3F3F2] font-bold mb-4">
-              Transparent <span className="text-[#CDFF00]">Pricing</span>
-            </h2>
+            <h2
+  className="text-3xl md:text-5xl text-[#F3F3F2] mb-4"
+  style={{ fontFamily: "'League Spartan', sans-serif", letterSpacing: '0.02em' }}
+>
+  Transparent{' '}
+  <span
+    className="text-[#CDFF00] font-bold"
+    style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.12em', textTransform: 'uppercase' }}
+  >
+    PRICING
+  </span>
+</h2>
             <p className="text-[#DADADA] text-lg">
               Turnaround time = 7–8 Working Days · Multiple videos from one wedding? Volume pricing applies automatically
             </p>
@@ -270,12 +279,13 @@ export default function Pricing() {
                   )}
 
                   <div className="pc-btn-wrap">
-                    <button
-                      onClick={() => setSelectedPlan(card)}
-                      className="w-full py-3 border border-primary/40 text-primary rounded-md hover:bg-primary/10 transition-colors"
-                    >
-                      {card.button_label}
-                    </button>
+                   <button
+  onClick={() => setSelectedPlan(card)}
+  className="w-full py-3 border border-primary/40 text-primary rounded-md hover:bg-primary/10 transition-colors"
+  style={{ fontFamily: "'League Spartan', sans-serif", letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: '0.85rem', fontWeight: 500 }}
+>
+  {card.button_label}
+</button>
                   </div>
                 </div>
               </div>

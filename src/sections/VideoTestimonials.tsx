@@ -257,9 +257,18 @@ export function VideoTestimonials() {
 
           {/* Heading */}
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-display font-bold mb-4 text-white">
-              Video <span className="text-[#CDFF00]">Testimonials</span>
-            </h2>
+            <h2
+  className="text-3xl md:text-5xl mb-4 text-white"
+  style={{ fontFamily: "'League Spartan', sans-serif", letterSpacing: '0.02em' }}
+>
+  Video{' '}
+  <span
+    className="text-[#CDFF00] font-bold"
+    style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.12em', textTransform: 'uppercase' }}
+  >
+    TESTIMONIALS
+  </span>
+</h2>
           </div>
 
           {/* Carousel */}

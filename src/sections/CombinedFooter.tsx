@@ -145,9 +145,18 @@ export function CombinedFooter() {
 
           {/* RIGHT: CONTACT FORM */}
           <div>
-            <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#F3F3F2] mb-3">
-              Send Us a <span className="text-[#CDFF00]">Message</span>
-            </h2>
+           <h2
+  className="text-3xl md:text-4xl text-[#F3F3F2] mb-3"
+  style={{ fontFamily: "'League Spartan', sans-serif", letterSpacing: '0.02em' }}
+>
+  Send Us a{' '}
+  <span
+    className="text-[#CDFF00] font-bold"
+    style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.12em', textTransform: 'uppercase' }}
+  >
+    MESSAGE
+  </span>
+</h2>
             <p className="text-[#DADADA] mb-8 text-base">
               Fill out the form below and we will get back to you within 24 hours
             </p>
@@ -155,7 +164,10 @@ export function CombinedFooter() {
             {isSubmitted ? (
               <div className="text-center py-12 bg-[#363432]/40 rounded-xl border border-[#4A4845]/50">
                 <CheckCircle className="w-14 h-14 text-[#CDFF00] mx-auto mb-4" />
-                <h3 className="text-2xl font-serif text-[#F3F3F2] mb-2">Message Sent!</h3>
+                <h3
+  className="text-xl md:text-2xl text-[#F3F3F2] mb-5"
+  style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.04em' }}
+>Message Sent!</h3>
                 <p className="text-[#DADADA]">Thank you, we will be in touch soon.</p>
               </div>
             ) : (

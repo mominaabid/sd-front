@@ -166,7 +166,7 @@ export function TeamPage() {
     <div ref={pageRef} className="min-h-screen bg-[#222120] text-white overflow-x-hidden">
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Aboreto&family=League+Spartan:wght@400;500;600&family=Outfit:wght@300;400;500;600&display=swap');
 
         *, *::before, *::after { box-sizing: border-box; }
 
@@ -224,7 +224,9 @@ export function TeamPage() {
         .tp-nav-cta {
           background: var(--lime) !important; color: #111 !important;
           padding: 9px 20px !important; border-radius: var(--r) !important;
+          font-family: 'League Spartan', sans-serif !important;
           font-weight:600 !important; font-size:0.85rem !important;
+          letter-spacing: 0.08em !important; text-transform: uppercase !important;
           white-space:nowrap; position:relative; overflow:hidden;
           transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.35s !important;
         }
@@ -259,7 +261,14 @@ export function TeamPage() {
         .tp-mob-arr { font-size:0.8rem; color:var(--lime); opacity:0; transform:translateX(-6px); transition: opacity 0.3s, transform 0.35s; }
         .tp-mob-link:hover .tp-mob-arr { opacity:1; transform:translateX(0); }
         .tp-drawer-ftr { padding:20px 20px 36px; border-top:1px solid rgba(255,255,255,0.06); flex-shrink:0; }
-        .tp-mob-cta { display:flex; align-items:center; justify-content:center; width:100%; background:var(--lime); color:#111; padding:15px; border-radius:var(--r); font-weight:600; font-size:0.95rem; text-decoration:none; transition:transform 0.2s, box-shadow 0.2s; }
+        .tp-mob-cta {
+          display:flex; align-items:center; justify-content:center; width:100%;
+          background:var(--lime); color:#111; padding:15px; border-radius:var(--r);
+          font-family: 'League Spartan', sans-serif;
+          font-weight:600; font-size:0.9rem;
+          letter-spacing: 0.08em; text-transform: uppercase;
+          text-decoration:none; transition:transform 0.2s, box-shadow 0.2s;
+        }
         .tp-mob-cta:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(200,244,0,0.28); }
         @media (max-width: 860px) { .tp-nav-links li:nth-child(1), .tp-nav-links li:nth-child(3) { display:none; } }
         @media (max-width: 600px) { .tp-nav-links { display:none; } .tp-ham { display:flex; } .tp-overlay { display:block; } .tp-drawer { display:flex; } }
@@ -276,14 +285,32 @@ export function TeamPage() {
           font-weight:500; letter-spacing:3.5px; text-transform:uppercase; margin-bottom: 16px;
         }
         .tp-header-eyebrow::before,.tp-header-eyebrow::after { content:''; display:block; width:28px; height:1px; background:var(--lime); opacity:0.55; }
-        .tp-header h1 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: clamp(2.6rem, 7vw, 5rem); font-weight: 300; line-height: 1.08; margin-bottom: clamp(12px,2vw,20px); color: var(--light); }
-        .tp-header h1 em { font-style:italic; color:var(--lime); }
+
+        /* ── UPDATED: League Spartan for h1 ── */
+        .tp-header h1 {
+  font-family: 'League Spartan', sans-serif;
+  font-size: clamp(2.6rem, 7vw, 5rem);
+  font-weight: 300;
+  line-height: 1.08;
+  margin-bottom: clamp(12px,2vw,20px);
+  color: var(--light);
+  letter-spacing: 0.02em;
+}
+.tp-header h1 em {
+  font-family: 'Aboreto', cursive;
+  font-style: normal;
+  font-weight: 700;
+  color: var(--lime);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
         .tp-header p { color: rgba(240,237,232,0.55); font-size: clamp(0.9rem,1.8vw,1.1rem); max-width: 560px; margin:0 auto; line-height:1.7; }
         .tp-header .tp-fade:nth-child(1) { transition-delay: 0ms; }
         .tp-header .tp-fade:nth-child(2) { transition-delay: 120ms; }
         .tp-header .tp-fade:nth-child(3) { transition-delay: 220ms; }
 
-        /* ── SHARED CONTENT WIDTH — both sections use this ── */
+        /* ── SHARED CONTENT WIDTH ── */
         .tp-content-wrap {
           max-width: var(--section-max);
           margin: 0 auto;
@@ -327,7 +354,15 @@ export function TeamPage() {
           will-change: opacity;
         }
         .tp-card:hover .tp-card-label { opacity: 0; }
-        .tp-card-label h4 { font-family: 'Cormorant Garamond', serif; font-size: clamp(1rem,2vw,1.2rem); font-weight:400; margin-bottom:4px; }
+
+        /* ── UPDATED: Aboreto for card label h4 ── */
+        .tp-card-label h4 {
+          font-family: 'Aboreto', cursive;
+          font-size: clamp(0.85rem,2vw,1rem);
+          font-weight: 400;
+          margin-bottom: 4px;
+          letter-spacing: 0.04em;
+        }
         .tp-card-label p { color:var(--lime); font-size:0.78rem; font-weight:500; }
 
         .tp-card-overlay {
@@ -346,7 +381,16 @@ export function TeamPage() {
         .tp-card:hover .tp-card-overlay > *:nth-child(2) { transition-delay: 0.10s; }
         .tp-card:hover .tp-card-overlay > *:nth-child(3) { transition-delay: 0.15s; }
         .tp-card:hover .tp-card-overlay > *:nth-child(4) { transition-delay: 0.20s; }
-        .tp-card-overlay h4 { font-family:'Cormorant Garamond',serif; font-size:clamp(1rem,2vw,1.2rem); font-weight:400; margin-bottom:4px; color: var(--light); }
+
+        /* ── UPDATED: Aboreto for card overlay h4 ── */
+        .tp-card-overlay h4 {
+          font-family: 'Aboreto', cursive;
+          font-size: clamp(0.85rem,2vw,1rem);
+          font-weight: 400;
+          margin-bottom: 4px;
+          color: var(--light);
+          letter-spacing: 0.04em;
+        }
         .tp-card-overlay .tp-role { color:var(--lime); font-size:0.78rem; margin-bottom:10px; }
         .tp-card-overlay .tp-bio { color:rgba(240,237,232,0.75); font-size:0.78rem; line-height:1.6; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:10px; }
         .tp-card-overlay .tp-li-link { display:inline-flex; align-items:center; gap:6px; color:var(--lime); font-size:0.8rem; font-weight:500; text-decoration:none; transition:color 0.2s; }
@@ -362,8 +406,23 @@ export function TeamPage() {
 
         /* ── SECTION TITLE ── */
         .tp-section-title { text-align:center; margin-bottom: clamp(24px,4vw,48px); }
-        .tp-section-title h2 { font-family:'Cormorant Garamond',serif; font-size: clamp(1.8rem,4vw,3rem); font-weight:300; color:var(--light); }
-        .tp-section-title h2 em { font-style:italic; color:var(--lime); }
+
+        /* ── UPDATED: Aboreto for BTS section h2 ── */
+        .tp-section-title h2 {
+  font-family: 'League Spartan', sans-serif;
+  font-size: clamp(1.8rem,4vw,3rem);
+  font-weight: 300;
+  color: var(--light);
+  letter-spacing: 0.02em;
+}
+.tp-section-title h2 em {
+  font-family: 'Aboreto', cursive;
+  font-style: normal;
+  font-weight: 700;
+  color: var(--lime);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
         .tp-section-title .tp-rule { width:40px; height:1px; margin:12px auto 0; background:linear-gradient(90deg,var(--lime),transparent); }
 
         /* ── BTS ── */
@@ -555,7 +614,8 @@ export function TeamPage() {
             <div style={{ display:'flex', alignItems:'center', gap:16, marginBottom:16 }}>
               <img src={selectedMember.picture} alt={selectedMember.name} style={{ width:64, height:64, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />
               <div>
-                <h4 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'1.15rem', marginBottom:2 }}>{selectedMember.name}</h4>
+                {/* UPDATED: Aboreto for mobile panel member name */}
+                <h4 style={{ fontFamily:"'Aboreto', cursive", fontSize:'1rem', marginBottom:2, letterSpacing:'0.04em' }}>{selectedMember.name}</h4>
                 <p style={{ color:'var(--lime)', fontSize:'0.8rem' }}>{selectedMember.role}</p>
               </div>
             </div>

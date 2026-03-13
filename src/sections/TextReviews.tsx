@@ -122,9 +122,18 @@ export function TextReviews() {
     >
       <div className="container-custom max-w-6xl mx-auto px-4">
         <div className="text-center mb-10 md:mb-12">
-          <h2 className="fade-up text-2xl md:text-4xl font-display font-bold text-[#F3F3F2]">
-            What Our Clients <span className="text-[#CDFF00]">Say</span>
-          </h2>
+          <h2
+  className="fade-up text-2xl md:text-4xl text-[#F3F3F2]"
+  style={{ fontFamily: "'League Spartan', sans-serif", letterSpacing: '0.02em' }}
+>
+  What Our Clients{' '}
+  <span
+    className="text-[#CDFF00] font-bold"
+    style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.12em', textTransform: 'uppercase' }}
+  >
+    SAY
+  </span>
+</h2>
         </div>
 
         <div className="fade-up relative" style={{ height: '320px', minHeight: '280px' }}>

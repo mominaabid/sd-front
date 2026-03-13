@@ -27,9 +27,12 @@ export function Footer() {
           {/* Brand */}
           <div className="lg:col-span-1">
             <div className="mb-4">
-              <h3 className="font-serif text-2xl text-[#F3F3F2]">
-                {footerConfig.brandName}
-              </h3>
+              <h3
+  className="text-2xl text-[#F3F3F2]"
+  style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.04em' }}
+>
+  {footerConfig.brandName}
+</h3>
               <p className="font-script text-[#CDFF00] text-xl">
                 {footerConfig.tagline}
               </p>
@@ -61,9 +64,12 @@ export function Footer() {
           {/* Quick Links */}
           {footerConfig.linkGroups.map((group) => (
             <div key={group.title}>
-              <h4 className="font-serif text-lg text-[#F3F3F2] mb-4">
-                {group.title}
-              </h4>
+              <h4
+  className="text-lg text-[#F3F3F2] mb-4"
+  style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.04em' }}
+>
+  {group.title}
+</h4>
               <ul className="space-y-2">
                 {group.links.map((link) => (
                   <li key={link.name}>
@@ -81,9 +87,12 @@ export function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 className="font-serif text-lg text-[#F3F3F2] mb-4">
-              Contact Us
-            </h4>
+            <h4
+  className="text-lg text-[#F3F3F2] mb-4"
+  style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.04em' }}
+>
+  Contact Us
+</h4>
             <ul className="space-y-3">
               {footerConfig.contactItems.map((item, index) => {
                 const Icon = contactIconMap[item.icon];
