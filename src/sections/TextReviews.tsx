@@ -91,9 +91,10 @@ export function TextReviews() {
     startAutoScroll();
   };
 
+  // FIX: use Math.round so wrapping works correctly for both odd and even counts
   const getOffset = (index: number) => {
     let offset = index - activeIndex;
-    const half = Math.floor(reviews.length / 2);
+    const half = Math.round(reviews.length / 2);
     if (offset > half) offset -= reviews.length;
     if (offset < -half) offset += reviews.length;
     return offset;
@@ -123,19 +124,22 @@ export function TextReviews() {
       <div className="container-custom max-w-6xl mx-auto px-4">
         <div className="text-center mb-10 md:mb-12">
           <h2
-  className="fade-up text-2xl md:text-4xl text-[#F3F3F2]"
-  style={{ fontFamily: "'League Spartan', sans-serif", letterSpacing: '0.02em' }}
->
-  What Our Clients{' '}
-  <span
-    className="text-[#CDFF00] font-bold"
-    style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.12em', textTransform: 'uppercase' }}
-  >
-    SAY
-  </span>
-</h2>
+            className="fade-up text-2xl md:text-4xl text-[#F3F3F2]"
+            style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.02em' }}
+          >
+            What Our Clients{' '}
+            <span
+              className="text-[#CDFF00]"
+              style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.12em', textTransform: 'uppercase' }}
+            >
+              SAY
+            </span>
+          </h2>
         </div>
 
+        {/* FIX: fade-up only on the container, NOT on individual cards.
+            Individual cards use inline opacity — mixing both causes center
+            card to appear invisible briefly on load. */}
         <div className="fade-up relative" style={{ height: '320px', minHeight: '280px' }}>
           <div className="absolute inset-y-0 left-0 w-1/6 bg-gradient-to-r from-[#363432] to-transparent z-10 pointer-events-none" />
           <div className="absolute inset-y-0 right-0 w-1/6 bg-gradient-to-l from-[#363432] to-transparent z-10 pointer-events-none" />
@@ -154,7 +158,8 @@ export function TextReviews() {
             return (
               <div
                 key={review.id}
-                className="absolute left-1/2 top-0 transition-all duration-700 ease-out fade-up"
+                // FIX: no fade-up here — inline opacity controls visibility
+                className="absolute left-1/2 top-0 transition-all duration-700 ease-out"
                 style={{
                   transform: `translateX(calc(-50% + ${translateX}px)) scale(${scale})`,
                   opacity,

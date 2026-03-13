@@ -42,11 +42,11 @@ export function WineShowcase() {
         <div className="text-center mb-16">
          <h2
   className="fade-up text-3xl md:text-5xl mb-4 text-white"
-  style={{ fontFamily: "'League Spartan', sans-serif", letterSpacing: '0.02em' }}
+  style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.02em' }}
 >
   Built Specifically for{' '}
   <span
-    className="text-[#CDFF00] font-bold"
+    className="text-[#CDFF00]"
     style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.12em', textTransform: 'uppercase' }}
   >
     WEDDING VIDEOGRAPHERS
@@ -82,7 +82,7 @@ export function WineShowcase() {
                 )}
 
                 <h3
-  className="text-xl font-semibold mb-3 text-white"
+  className="text-xl  mb-3 text-white"
   style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.04em' }}
 >
   {feature.title}

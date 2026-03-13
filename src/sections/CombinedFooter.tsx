@@ -81,7 +81,10 @@ export function CombinedFooter() {
           <div className="space-y-10">
 
             <div>
-              <h3 className="font-serif text-xl md:text-2xl text-[#F3F3F2] mb-5">
+              <h3
+  className="text-xl md:text-2xl text-[#F3F3F2] mb-5"
+  style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.04em' }}
+>
                 Contact Info
               </h3>
               <div className="space-y-4 text-[#DADADA]">
@@ -147,11 +150,11 @@ export function CombinedFooter() {
           <div>
            <h2
   className="text-3xl md:text-4xl text-[#F3F3F2] mb-3"
-  style={{ fontFamily: "'League Spartan', sans-serif", letterSpacing: '0.02em' }}
+  style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.02em' }}
 >
   Send Us a{' '}
   <span
-    className="text-[#CDFF00] font-bold"
+    className="text-[#CDFF00]"
     style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.12em', textTransform: 'uppercase' }}
   >
     MESSAGE
@@ -222,10 +225,11 @@ export function CombinedFooter() {
                 )}
 
                 <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-9 py-3.5 bg-[#CDFF00] text-[#222120] font-medium rounded-lg hover:bg-[#b8e600] transition-colors disabled:opacity-60 flex items-center gap-2.5"
-                >
+  type="submit"
+  disabled={isSubmitting}
+  className="px-9 py-3.5 bg-[#CDFF00] text-[#222120] rounded-lg hover:bg-[#b8e600] transition-colors disabled:opacity-60 flex items-center gap-2.5"
+  style={{ fontFamily: "'League Spartan', sans-serif", letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: '0.85rem', fontWeight: 600 }}
+>
                   <span>{isSubmitting ? 'Sending...' : 'Send Message'}</span>
                   {!isSubmitting && <Send size={18} />}
                 </button>

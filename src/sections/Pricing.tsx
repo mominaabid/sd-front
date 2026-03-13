@@ -221,16 +221,16 @@ export default function Pricing() {
         }
       `}</style>
 
-      <section id="pricing" className="section-padding bg-[#222120]">
+      <section id="pricing" className="py-16 bg-[#222120]">
         <div className="container-custom">
           <div className="text-center mb-16">
             <h2
   className="text-3xl md:text-5xl text-[#F3F3F2] mb-4"
-  style={{ fontFamily: "'League Spartan', sans-serif", letterSpacing: '0.02em' }}
+  style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.02em' }}
 >
   Transparent{' '}
   <span
-    className="text-[#CDFF00] font-bold"
+    className="text-[#CDFF00]"
     style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.12em', textTransform: 'uppercase' }}
   >
     PRICING
@@ -393,11 +393,12 @@ export default function Pricing() {
                     </div>
 
                     <button
-                      type="submit"
-                      className="w-full py-3 bg-primary text-[#222120] rounded-xl font-semibold hover:bg-primary/90 transition-colors"
-                    >
-                      Submit Inquiry
-                    </button>
+  type="submit"
+  className="w-full py-3 bg-primary text-[#222120] rounded-xl hover:bg-primary/90 transition-colors"
+  style={{ fontFamily: "'League Spartan', sans-serif", letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: '0.85rem', fontWeight: 600 }}
+>
+  Submit Inquiry
+</button>
                   </form>
                 </div>
               </>

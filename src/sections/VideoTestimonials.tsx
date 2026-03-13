@@ -22,7 +22,6 @@ export function VideoTestimonials() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // Controls the whole-section fade-in — separate from card positioning
   const [sectionVisible, setSectionVisible] = useState(false);
 
   const sectionRef = useRef<HTMLElement>(null);
@@ -47,14 +46,13 @@ export function VideoTestimonials() {
     fetchTestimonials();
   }, []);
 
-  // ─── Section fade-in (whole section as one unit, not per-card) ─
+  // ─── Section fade-in ───────────────────────────────────────────
   useEffect(() => {
-    if (loading) return; // wait until data is loaded before observing
+    if (loading) return;
 
     const el = sectionRef.current;
     if (!el) return;
 
-    // If already in viewport (e.g. section is near top), show immediately
     const rect = el.getBoundingClientRect();
     if (rect.top < window.innerHeight) {
       requestAnimationFrame(() => setTimeout(() => setSectionVisible(true), 16));
@@ -75,14 +73,13 @@ export function VideoTestimonials() {
 
     observer.observe(el);
 
-    // Hard fallback — always show after 1s even if observer never fires
     const fallback = setTimeout(() => setSectionVisible(true), 1000);
 
     return () => {
       observer.disconnect();
       clearTimeout(fallback);
     };
-  }, [loading]); // re-run once loading completes
+  }, [loading]);
 
   // ─── Auto-rotate carousel ──────────────────────────────────────
   useEffect(() => {
@@ -118,14 +115,17 @@ export function VideoTestimonials() {
       prev === null ? null : (prev + 1) % testimonials.length
     );
 
-  // ─── Position calculation for 3-card loop ─────────────────────
+  // ─── FIXED: Position calculation ──────────────────────────────
+  // Only ever 3 cards visible: center (diff=0), right (diff=1), left (diff=total-1).
+  // Everything else is hidden — regardless of total count.
   const getPosition = (index: number) => {
     const total = testimonials.length;
     const diff = (index - activeIndex + total) % total;
+
     if (diff === 0) return 'center';
-    if (diff === 1 || diff === total - 2) return 'right';
+    if (diff === 1) return 'right';
     if (diff === total - 1) return 'left';
-    return 'hidden';
+    return 'hidden'; // diff === 2, 3, ... total-2 are all hidden
   };
 
   // ─── Render ───────────────────────────────────────────────────
@@ -148,7 +148,6 @@ export function VideoTestimonials() {
   return (
     <>
       <style>{`
-        /* ── Section entrance — the WHOLE section fades in as one unit ── */
         .vt-section {
           opacity: 0;
           transform: translateY(28px) translateZ(0);
@@ -157,7 +156,6 @@ export function VideoTestimonials() {
             transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
           will-change: opacity, transform;
           backface-visibility: hidden;
-          /* Safety net: always become visible after 1.2s regardless of observer */
           animation: vtFallback 0s linear 1.2s forwards;
         }
         @keyframes vtFallback {
@@ -169,13 +167,9 @@ export function VideoTestimonials() {
           animation: none;
         }
 
-        /* ── Individual cards: NO opacity/transform animation here ──
-           They are always fully visible once the section is visible.
-           Only their POSITION transitions are animated.               */
         .reel-card {
           position: absolute;
           transform-origin: center center;
-          /* Smooth position/scale/filter transitions only */
           transition:
             left      0.65s cubic-bezier(0.16, 1, 0.3, 1),
             width     0.65s cubic-bezier(0.16, 1, 0.3, 1),
@@ -189,7 +183,6 @@ export function VideoTestimonials() {
           backface-visibility: hidden;
         }
 
-        /* ── Center card ── */
         .reel-center {
           width: 240px;
           height: 400px;
@@ -201,7 +194,6 @@ export function VideoTestimonials() {
           opacity: 1;
         }
 
-        /* ── Side cards ── */
         .reel-left,
         .reel-right {
           width: 180px;
@@ -215,31 +207,23 @@ export function VideoTestimonials() {
         .reel-left  { left: calc(50% - 220px); }
         .reel-right { left: calc(50% + 220px); }
 
-        /* ── Hidden cards ── */
+        /* Hidden cards fade out and collapse to center — no stuck positioning */
         .reel-hidden {
           opacity: 0;
           pointer-events: none;
           visibility: hidden;
           left: 50%;
+          top: 60px;
+          width: 180px;
+          height: 320px;
           transform: translateX(-50%) scale(0.7) translateZ(0);
+          z-index: 1;
         }
 
-        /* ── Mobile ── */
         @media (max-width: 640px) {
-          .reel-center {
-            width: 180px;
-            height: 320px;
-          }
-          .reel-left {
-            left: calc(50% - 160px);
-            width: 130px;
-            height: 240px;
-          }
-          .reel-right {
-            left: calc(50% + 160px);
-            width: 130px;
-            height: 240px;
-          }
+          .reel-center { width: 180px; height: 320px; }
+          .reel-left  { left: calc(50% - 160px); width: 130px; height: 240px; }
+          .reel-right { left: calc(50% + 160px); width: 130px; height: 240px; }
         }
 
         @media (max-width: 400px) {
@@ -251,24 +235,24 @@ export function VideoTestimonials() {
 
       <section
         ref={sectionRef}
-        className={`vt-section${sectionVisible ? ' vt-visible' : ''} py-24 relative overflow-hidden bg-gradient-to-br from-[#1a1918] via-[#2a2826] to-[#363432] min-h-[80vh] z-10`}
+        className={`vt-section${sectionVisible ? ' vt-visible' : ''} py-16 relative overflow-hidden bg-gradient-to-br from-[#1a1918] via-[#2a2826] to-[#363432] min-h-[80vh] z-10`}
       >
         <div className="container mx-auto px-6 relative z-10">
 
           {/* Heading */}
           <div className="text-center mb-16">
             <h2
-  className="text-3xl md:text-5xl mb-4 text-white"
-  style={{ fontFamily: "'League Spartan', sans-serif", letterSpacing: '0.02em' }}
->
-  Video{' '}
-  <span
-    className="text-[#CDFF00] font-bold"
-    style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.12em', textTransform: 'uppercase' }}
-  >
-    TESTIMONIALS
-  </span>
-</h2>
+              className="text-3xl md:text-5xl mb-4 text-white"
+              style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.02em' }}
+            >
+              Video{' '}
+              <span
+                className="text-[#CDFF00]"
+                style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.12em', textTransform: 'uppercase' }}
+              >
+                TESTIMONIALS
+              </span>
+            </h2>
           </div>
 
           {/* Carousel */}
@@ -290,7 +274,7 @@ export function VideoTestimonials() {
               <ChevronRight className="w-7 h-7" />
             </button>
 
-            {/* Cards — always fully opaque; position/scale transitions only */}
+            {/* Cards */}
             {testimonials.map((testimonial, index) => {
               const position = getPosition(index);
               return (
@@ -326,7 +310,10 @@ export function VideoTestimonials() {
                     )}
 
                     <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/90 to-transparent">
-                      <h4 className="font-display font-semibold text-white text-lg mb-1">
+                      <h4
+                        className="font-semibold text-white text-lg mb-1"
+                        style={{ fontFamily: "'League Spartan', sans-serif" }}
+                      >
                         {testimonial.name}
                       </h4>
                       <p className="text-[#CDFF00] text-sm">{testimonial.designation}</p>
@@ -387,7 +374,9 @@ export function VideoTestimonials() {
             </button>
 
             {testimonials[selectedIndex].video_file || testimonials[selectedIndex].video_url ? (
+              // ─── FIX: key forces React to remount video when navigating ───
               <video
+                key={testimonials[selectedIndex].id}
                 src={testimonials[selectedIndex].video_file || testimonials[selectedIndex].video_url}
                 controls
                 autoPlay
@@ -402,7 +391,10 @@ export function VideoTestimonials() {
                     className="max-w-full max-h-3/4 object-contain rounded-xl mb-6 shadow-2xl"
                   />
                 )}
-                <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
+                <h3
+                  className="text-xl font-bold text-white"
+                  style={{ fontFamily: "'League Spartan', sans-serif" }}
+                >
                   {testimonials[selectedIndex].name}
                 </h3>
                 <p className="text-[#CDFF00] text-lg mb-2">{testimonials[selectedIndex].designation}</p>
@@ -414,7 +406,10 @@ export function VideoTestimonials() {
             )}
 
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent px-6 py-4">
-              <h3 className="font-display text-xl font-bold text-white">
+              <h3
+                className="font-display text-xl font-bold text-white"
+                style={{ fontFamily: "'League Spartan', sans-serif" }}
+              >
                 {testimonials[selectedIndex].name}
               </h3>
               <p className="text-[#CDFF00] text-sm">{testimonials[selectedIndex].designation}</p>

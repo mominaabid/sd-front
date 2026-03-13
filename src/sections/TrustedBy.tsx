@@ -19,7 +19,12 @@ export function TrustedBy() {
         const response = await fetch(`${API_BASE_URL}logos/`);
         const result = await response.json();
 
+        // FIX: handle both { success, data } and plain array response shapes
         if (result.success && result.data) {
+          setLogos(result.data);
+        } else if (Array.isArray(result)) {
+          setLogos(result);
+        } else if (Array.isArray(result.data)) {
           setLogos(result.data);
         } else {
           throw new Error("Invalid API structure");
@@ -39,15 +44,15 @@ export function TrustedBy() {
   if (error) return <div className="text-center py-10 text-red-400">{error}</div>;
   if (logos.length === 0) return <div className="text-center py-10 text-white">No logos available</div>;
 
-  // Repeat logos enough times to make the scroll seamless
+  // Repeat logos 3x — animation translateX(-33.33%) scrolls exactly one set
   const repeatedLogos = [...logos, ...logos, ...logos];
 
   return (
-    <section className="py-16 bg-[#2E2C2A] border-y border-white/10 overflow-hidden">
+    <section className="pt-16 pb-8 bg-[#2E2C2A] border-y border-white/10 overflow-hidden">
       <style>
         {`
           @keyframes scrollLeft {
-            0% { transform: translateX(0); }
+            0%   { transform: translateX(0); }
             100% { transform: translateX(-33.33%); }
           }
 
@@ -65,11 +70,11 @@ export function TrustedBy() {
       </style>
 
       <h3
-  className="text-center text-l font-bold uppercase text-white mb-12"
-  style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.12em' }}
->
-  Trusted By Leading Wedding Videographers
-</h3>
+        className="text-center text-l font-bold uppercase text-white mb-12"
+        style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.12em' }}
+      >
+        Trusted By Leading Wedding Videographers
+      </h3>
 
       <div className="overflow-hidden relative">
         <div className="logo-scroll">
@@ -79,13 +84,13 @@ export function TrustedBy() {
               href={logo.link || "#"}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center min-w-[200px] h-16"
+              className="flex items-center justify-center min-w-[200px] h-32"
             >
               <img
                 src={logo.logo_url}
                 alt={logo.company_name}
                 loading="lazy"
-                className="max-h-28 w-auto object-contain opacity-70 hover:opacity-100 transition"
+                className="max-h-24 w-auto object-contain opacity-70 hover:opacity-100 transition"
               />
             </a>
           ))}

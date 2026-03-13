@@ -288,7 +288,7 @@ export function TeamPage() {
 
         /* ── UPDATED: League Spartan for h1 ── */
         .tp-header h1 {
-  font-family: 'League Spartan', sans-serif;
+  font-family: 'Aboreto', cursive;
   font-size: clamp(2.6rem, 7vw, 5rem);
   font-weight: 300;
   line-height: 1.08;
@@ -298,8 +298,9 @@ export function TeamPage() {
 }
 .tp-header h1 em {
   font-family: 'Aboreto', cursive;
+  font-size: clamp(2.6rem, 7vw, 5rem);
   font-style: normal;
-  font-weight: 700;
+  font-weight: 300;
   color: var(--lime);
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -409,7 +410,7 @@ export function TeamPage() {
 
         /* ── UPDATED: Aboreto for BTS section h2 ── */
         .tp-section-title h2 {
-  font-family: 'League Spartan', sans-serif;
+  font-family: 'Aboreto', cursive;
   font-size: clamp(1.8rem,4vw,3rem);
   font-weight: 300;
   color: var(--light);

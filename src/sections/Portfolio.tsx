@@ -224,15 +224,15 @@ export function Portfolio() {
       >
         <div className="container mx-auto px-6">
 
-          {/* Header — white in League Spartan, green word in Aboreto uppercase */}
+          {/* Header */}
           <div className="port-fade text-center mb-12">
             <h2
   className="text-3xl md:text-5xl mb-4"
-  style={{ fontFamily: "'League Spartan', sans-serif", letterSpacing: '0.02em' }}
+  style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.02em' }}
 >
   Our{' '}
   <span
-    className="text-[#CDFF00] font-bold"
+    className="text-[#CDFF00]"
     style={{ fontFamily: "'Aboreto', cursive", letterSpacing: '0.12em', textTransform: 'uppercase' }}
   >
     PORTFOLIO
@@ -240,7 +240,7 @@ export function Portfolio() {
 </h2>
           </div>
 
-          {/* Filter Tabs — League Spartan, uppercase */}
+          {/* Filter Tabs */}
           <div className="port-fade flex flex-wrap justify-center gap-3 mb-12">
             {categories.map((cat) => (
               <button
@@ -305,13 +305,13 @@ export function Portfolio() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/90 to-transparent">
                       <p
-                        className="text-xs text-[#CDFF00] font-medium uppercase tracking-wider mb-1"
+                        className="text-xs text-[#CDFF00] uppercase tracking-wider mb-1"
                         style={{ fontFamily: "'League Spartan', sans-serif" }}
                       >
                         {categories.find((c) => c.id === item.category.id)?.name || 'Video'}
                       </p>
                       <h4
-                        className="font-semibold text-white text-lg"
+                        className=" text-white text-lg"
                         style={{ fontFamily: "'League Spartan', sans-serif" }}
                       >
                         {item.title}
@@ -387,7 +387,7 @@ export function Portfolio() {
             />
             <div className="p-4 text-center bg-[#1a1a1a]">
               <h3
-                className="text-xl md:text-2xl font-bold text-white mb-1"
+                className="text-xl md:text-2xl text-white mb-1"
                 style={{ fontFamily: "'League Spartan', sans-serif" }}
               >
                 {selectedVideo.title}
