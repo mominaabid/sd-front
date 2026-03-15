@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Check, X } from 'lucide-react';
 import { API_BASE_URL } from '../constants/urls';
-
+import emailjs from "@emailjs/browser";
 interface VideoType {
   id: number;
   name: string;
@@ -25,6 +25,9 @@ interface FormData {
   email: string;
   videoTypes: string[];
 }
+const SERVICE_ID = "service_h0wkiad";
+const TEMPLATE_ID = "template_fdbul09";
+const PUBLIC_KEY = "qU_ljJITgXTBKHwWp";
 
 export default function Pricing() {
   const [cards, setCards] = useState<PricingCard[]>([]);
@@ -61,6 +64,9 @@ export default function Pricing() {
       document.body.style.overflow = '';
     };
   }, [selectedPlan]);
+  useEffect(() => {
+  emailjs.init(PUBLIC_KEY);
+}, []);
 
   const handleVideoTypeToggle = (videoId: string) => {
     setFormData((prev) => ({
@@ -102,17 +108,44 @@ export default function Pricing() {
         body: JSON.stringify(payload),
       });
       const result = await res.json();
-      if (res.ok) {
-        setIsSubmitted(true);
+     if (res.ok) {
+  setIsSubmitted(true);
 
-        // ── Meta Pixel: track lead with plan details ──
-        if (typeof window !== 'undefined' && (window as any).fbq) {
-          (window as any).fbq('track', 'Lead', {
-            content_name: selectedPlan.heading,
-            content_category: selectedPlan.card_type,
-          });
-        }
-      } else {
+  // prepare selected video names
+  const selectedVideos = formData.videoTypes
+    .map((id) => {
+      const v = videoTypesList.find((video) => video.id.toString() === id);
+      return v?.name;
+    })
+    .filter(Boolean)
+    .join(", ");
+
+  const totalPrice = calculateTotal();
+
+  // send email via EmailJS
+  await emailjs.send(
+    SERVICE_ID,
+    TEMPLATE_ID,
+    {
+      name: formData.personalName,
+      company: formData.companyName || "-",
+      phone: formData.phone,
+      email: formData.email,
+      plan: selectedPlan.heading,
+      video_types: selectedVideos || "-",
+      total_price: totalPrice ? `$${totalPrice}` : "-",
+      date: new Date().toLocaleString(),
+    }
+  );
+
+  // ── Meta Pixel: track lead with plan details ──
+  if (typeof window !== "undefined" && (window as any).fbq) {
+    (window as any).fbq("track", "Lead", {
+      content_name: selectedPlan.heading,
+      content_category: selectedPlan.card_type,
+    });
+  }
+}else {
         console.error('Submit failed:', result);
       }
     } catch (err) {

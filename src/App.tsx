@@ -16,7 +16,7 @@ import { Preloader } from './components/Preloader';
 import { ScrollToTop } from './components/ScrollToTop';
 import { WhatsAppWidget } from './components/WhatsAppWidget';
 import { TeamPage } from './pages/TeamPage';
-
+import Chatbot from './components/Chatbot';
 function App() {
   const [isLoading, setIsLoading] = useState(true);
 
@@ -71,6 +71,7 @@ function App() {
 
         <ScrollToTop />
         <WhatsAppWidget />
+        <Chatbot />
       </div>
     </Router>
   );
