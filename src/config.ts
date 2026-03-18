@@ -184,7 +184,7 @@ export const builtForConfig: BuiltForConfig = {
     {
       title: "Quality",
       description:
-        "Achieving cinematic quality and modern wedding styles requires focus and expertise. Since post production is our sole priority, we’re dedicated to elevating the final film beyond standard edits.",
+        "Achieving cinematic quality and modern wedding styles requires focus and expertise. Since post production is our sole priority, we're dedicated to elevating the final film beyond standard edits.",
       logo: "/Q u a l i t y.png",
     },
     {
@@ -197,7 +197,7 @@ export const builtForConfig: BuiltForConfig = {
       title: "Reliability",
       description:
         "Wedding footage demands trust, security, and dependable timelines. With a system refined over 3 years, we deliver consistency you can rely on especially when it matters most.",
-      logo: "/Reliable-Editing-Partner.png",
+      logo: "/trust.png",  // updated from /Reliable-Editing-Partner.png
     },
   ],
 };

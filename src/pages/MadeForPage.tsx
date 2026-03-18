@@ -203,26 +203,20 @@ export function MadeForPage() {
         }
         .mf-card-icon { margin-bottom: 20px; }
 
-        /* ALL icons rendered bright — no dull appearance */
+        /* All icons — uniform color treatment */
         .mf-card-icon img {
           width: 36px; height: 36px;
           object-fit: contain;
-          filter: brightness(1.3) saturate(1.2);
+          /* Recolor ALL icons to #CDFF00 for consistency */
+          filter: brightness(0) saturate(100%) invert(93%) sepia(42%) saturate(1000%) hue-rotate(22deg) brightness(1.3);
           transition: filter 0.3s;
-        }
-        /* Reliability icon is grey/white — recolor it to lime green like the others */
-        .mf-card-icon img[src*="Reliable"] {
-          filter: brightness(0) saturate(100%) invert(89%) sepia(61%) saturate(700%) hue-rotate(28deg) brightness(1.05);
         }
         .mf-card-icon svg {
           width: 36px; height: 36px;
           transition: filter 0.3s;
         }
         .mf-card:hover .mf-card-icon img {
-          filter: brightness(1.5) saturate(1.3) drop-shadow(0 0 8px rgba(205,255,0,0.55));
-        }
-        .mf-card:hover .mf-card-icon img[src*="Reliable"] {
-          filter: brightness(0) saturate(100%) invert(89%) sepia(61%) saturate(700%) hue-rotate(28deg) brightness(1.2) drop-shadow(0 0 8px rgba(205,255,0,0.6));
+          filter: brightness(0) saturate(100%) invert(93%) sepia(42%) saturate(1000%) hue-rotate(22deg) brightness(1.5) drop-shadow(0 0 8px rgba(205,255,0,0.55));
         }
         .mf-card:hover .mf-card-icon svg {
           filter: drop-shadow(0 0 8px rgba(205,255,0,0.55));
