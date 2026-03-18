@@ -67,7 +67,6 @@ export function Hero({ isReady = true }: HeroProps) {
   const heading = heroData?.heading || fallbackData.heading;
   const subtitle = heroData?.subtitle || fallbackData.subtitle;
 
-  // Always split after "Films" so line1="Wedding Films", line2="That Couples Remember"
   const filmsIdx = heading.toLowerCase().indexOf("films");
   const headingLine1 = filmsIdx !== -1
     ? heading.slice(0, filmsIdx + 5).trim()
@@ -81,6 +80,7 @@ export function Hero({ isReady = true }: HeroProps) {
     { label: "Portfolio", href: "#portfolio", type: "anchor" },
     { label: "Pricing", href: "#pricing", type: "anchor" },
     { label: "Our Team", href: "/team", type: "router" },
+    { label: "Made For", href: "/made-for", type: "router" },
   ];
 
   return (
@@ -338,21 +338,22 @@ export function Hero({ isReady = true }: HeroProps) {
           width: 100%;
         }
 
-        /* Eyebrow — Aboreto, letter-spacing 12%, lime green with — dashes */
+        /* Eyebrow — increased size and weight for maximum readability */
         .hero-eyebrow {
           display: inline-flex;
           align-items: center;
           gap: 14px;
           color: var(--lime);
-          font-family: 'Aboreto', cursive;
-          font-size: clamp(0.75rem, 1.2vw, 0.9rem);
-          font-weight: 400;
-          letter-spacing: 0.18em;
+          font-family: 'League Spartan', sans-serif;
+          font-size: clamp(1rem, 1.8vw, 1.25rem);
+          font-weight: 600;
+          letter-spacing: 0.2em;
           text-transform: uppercase;
           margin-bottom: clamp(14px, 2.5vw, 22px);
           opacity: 0;
           transform: translateY(10px);
           animation: fadeUp 0.7s ease forwards 0.1s;
+          text-shadow: 0 0 24px rgba(200, 244, 0, 0.35);
         }
         .hero-eyebrow::before,
         .hero-eyebrow::after {
@@ -407,7 +408,7 @@ export function Hero({ isReady = true }: HeroProps) {
           margin-top: 2px;
         }
 
-        /* Subtitle — League Spartan, ALL CAPS, very small, muted, tight */
+        /* Subtitle */
         .hero-subtitle {
           font-family: 'League Spartan', sans-serif;
           font-size: clamp(0.7rem, 1.2vw, 0.9rem);
@@ -433,7 +434,7 @@ export function Hero({ isReady = true }: HeroProps) {
           animation: fadeUp 0.7s ease forwards 0.85s;
         }
 
-        /* Buttons — League Spartan */
+        /* Buttons */
         .btn-lime {
           position: relative; overflow: hidden;
           display: inline-flex; align-items: center; gap: 9px;
@@ -525,6 +526,7 @@ export function Hero({ isReady = true }: HeroProps) {
           .hero-title-line1 { font-size: clamp(1.6rem, 7vw, 2rem); letter-spacing: 0.08em; }
           .hero-title-line2 { font-size: clamp(0.75rem, 3.5vw, 1rem); letter-spacing: 0.08em; }
           .hero-subtitle { font-size: 0.65rem; letter-spacing: 0.1em; }
+          .hero-eyebrow { font-size: clamp(0.85rem, 3.5vw, 1rem); letter-spacing: 0.15em; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -626,6 +628,11 @@ export function Hero({ isReady = true }: HeroProps) {
             <a href="#pricing" className="btn-lime">View Pricing →</a>
             <a href="#portfolio" className="btn-ghost">Watch Portfolio</a>
           </div>
+        </div>
+
+        <div className="hero-scroll">
+          <div className="scroll-mouse"><span /></div>
+          <span className="scroll-label">Scroll</span>
         </div>
       </section>
     </>

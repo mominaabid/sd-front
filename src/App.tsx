@@ -4,7 +4,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Navigation } from './sections/Navigation';
 import { Hero } from './sections/Hero';
 import { TrustedBy } from './sections/TrustedBy';
-import { WineShowcase } from './sections/WineShowcase';
 import { Museum } from './sections/Museum';
 import { Portfolio } from './sections/Portfolio';
 import { VideoTestimonials } from './sections/VideoTestimonials';
@@ -16,7 +15,9 @@ import { Preloader } from './components/Preloader';
 import { ScrollToTop } from './components/ScrollToTop';
 import { WhatsAppWidget } from './components/WhatsAppWidget';
 import { TeamPage } from './pages/TeamPage';
+import { MadeForPage } from './pages/MadeForPage';
 import Chatbot from './components/Chatbot';
+
 function App() {
   const [isLoading, setIsLoading] = useState(true);
 
@@ -32,7 +33,7 @@ function App() {
         <Navigation />
 
         <Routes>
-          {/* Home Page */}
+          {/* Home Page — WineShowcase removed */}
           <Route
             path="/"
             element={
@@ -41,7 +42,6 @@ function App() {
                   <Hero isReady={!isLoading} />
                 </section>
                 <TrustedBy />
-                <WineShowcase />
                 <Museum />
                 <section id="portfolio">
                   <Portfolio />
@@ -56,13 +56,23 @@ function App() {
             }
           />
 
-         
           {/* Team Page */}
           <Route
             path="/team"
             element={
               <>
                 <TeamPage />
+                <Footer />
+              </>
+            }
+          />
+
+          {/* Made For Page */}
+          <Route
+            path="/made-for"
+            element={
+              <>
+                <MadeForPage />
                 <Footer />
               </>
             }

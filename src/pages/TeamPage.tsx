@@ -63,6 +63,7 @@ export function TeamPage() {
     { label: 'Portfolio', href: '/#portfolio',  type: 'anchor' },
     { label: 'Pricing',   href: '/#pricing',    type: 'anchor' },
     { label: 'Our Team',  href: '/team',        type: 'router' },
+    { label: 'Made For', href: '/made-for', type: 'router' },
   ];
 
   useEffect(() => {

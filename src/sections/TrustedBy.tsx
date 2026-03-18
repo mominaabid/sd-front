@@ -19,7 +19,6 @@ export function TrustedBy() {
         const response = await fetch(`${API_BASE_URL}logos/`);
         const result = await response.json();
 
-        // FIX: handle both { success, data } and plain array response shapes
         if (result.success && result.data) {
           setLogos(result.data);
         } else if (Array.isArray(result)) {
@@ -44,7 +43,6 @@ export function TrustedBy() {
   if (error) return <div className="text-center py-10 text-red-400">{error}</div>;
   if (logos.length === 0) return <div className="text-center py-10 text-white">No logos available</div>;
 
-  // Repeat logos 3x — animation translateX(-33.33%) scrolls exactly one set
   const repeatedLogos = [...logos, ...logos, ...logos];
 
   return (
@@ -58,7 +56,7 @@ export function TrustedBy() {
 
           .logo-scroll {
             display: flex;
-            gap: 4rem;
+            gap: 5rem;
             width: max-content;
             animation: scrollLeft 30s linear infinite;
           }
@@ -84,13 +82,13 @@ export function TrustedBy() {
               href={logo.link || "#"}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center min-w-[200px] h-32"
+              className="flex items-center justify-center min-w-[260px] h-44"
             >
               <img
                 src={logo.logo_url}
                 alt={logo.company_name}
                 loading="lazy"
-                className="max-h-24 w-auto object-contain opacity-70 hover:opacity-100 transition"
+                className="max-h-36 w-auto object-contain opacity-70 hover:opacity-100 transition"
               />
             </a>
           ))}

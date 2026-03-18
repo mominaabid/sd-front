@@ -58,6 +58,7 @@ export const navigationConfig: NavigationConfig = {
     { name: "Portfolio", href: "#portfolio" },
     { name: "Pricing", href: "#pricing" },
     { name: "Our Team", href: "/team" }, // external page
+     { name: "Made For",  href: "/made-for" }, // new page
   ],
   ctaButtonText: "Start a Project",
   ctaButtonHref: "#pricing",
