@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Quote, Star } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Quote, Star, ExternalLink } from 'lucide-react';
 import { API_BASE_URL } from '../constants/urls';
 
 interface Review {
@@ -9,6 +9,7 @@ interface Review {
   review_text: string;
   picture?: string;
   rating: number;
+  website_url?: string; // optional — add this field to your Django model/serializer
 }
 
 export function TextReviews() {
@@ -91,7 +92,6 @@ export function TextReviews() {
     startAutoScroll();
   };
 
-  // FIX: use Math.round so wrapping works correctly for both odd and even counts
   const getOffset = (index: number) => {
     let offset = index - activeIndex;
     const half = Math.round(reviews.length / 2);
@@ -121,6 +121,51 @@ export function TextReviews() {
       ref={sectionRef}
       className="py-16 md:py-20 bg-[#363432] overflow-hidden relative z-10 min-h-[70vh]"
     >
+      <style>{`
+        .tr-link-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: #CDFF00;
+          text-decoration: none;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          padding: 6px 12px;
+          border: 1px solid rgba(205,255,0,0.3);
+          border-radius: 8px;
+          background: rgba(205,255,0,0.06);
+          transition: background 0.2s, border-color 0.2s, transform 0.2s;
+          white-space: nowrap;
+        }
+        .tr-link-btn:hover {
+          background: rgba(205,255,0,0.14);
+          border-color: rgba(205,255,0,0.65);
+          transform: translateY(-1px);
+        }
+        .tr-avatar-link {
+          display: block;
+          border-radius: 50%;
+          transition: box-shadow 0.2s, transform 0.2s;
+          flex-shrink: 0;
+        }
+        .tr-avatar-link:hover {
+          box-shadow: 0 0 0 2px #CDFF00;
+          transform: scale(1.06);
+        }
+        .tr-name-link {
+          color: inherit;
+          text-decoration: none;
+          font-weight: 600;
+        }
+        .tr-name-link:hover {
+          color: #CDFF00;
+          text-decoration: underline;
+          text-underline-offset: 3px;
+        }
+      `}</style>
+
       <div className="container-custom max-w-6xl mx-auto px-4">
         <div className="text-center mb-10 md:mb-12">
           <h2
@@ -137,10 +182,7 @@ export function TextReviews() {
           </h2>
         </div>
 
-        {/* FIX: fade-up only on the container, NOT on individual cards.
-            Individual cards use inline opacity — mixing both causes center
-            card to appear invisible briefly on load. */}
-        <div className="fade-up relative" style={{ height: '320px', minHeight: '280px' }}>
+        <div className="fade-up relative" style={{ height: '340px', minHeight: '300px' }}>
           <div className="absolute inset-y-0 left-0 w-1/6 bg-gradient-to-r from-[#363432] to-transparent z-10 pointer-events-none" />
           <div className="absolute inset-y-0 right-0 w-1/6 bg-gradient-to-l from-[#363432] to-transparent z-10 pointer-events-none" />
 
@@ -148,6 +190,7 @@ export function TextReviews() {
             const offset = getOffset(index);
             const isCenter = offset === 0;
             const isAdjacent = Math.abs(offset) === 1;
+            const hasLink = !!review.website_url;
 
             const translateX = offset * 180;
             const scale = isCenter ? 1 : 0.85;
@@ -158,7 +201,6 @@ export function TextReviews() {
             return (
               <div
                 key={review.id}
-                // FIX: no fade-up here — inline opacity controls visibility
                 className="absolute left-1/2 top-0 transition-all duration-700 ease-out"
                 style={{
                   transform: `translateX(calc(-50% + ${translateX}px)) scale(${scale})`,
@@ -173,9 +215,10 @@ export function TextReviews() {
                 <div
                   className={`
                     bg-[#2a2826] border ${isCenter ? 'border-[#CDFF00]/50 shadow-2xl shadow-[#CDFF00]/20' : 'border-[#4A4845]/50'}
-                    rounded-2xl p-6 md:p-8 shadow-lg h-full flex flex-col transition-all duration-500
+                    rounded-2xl p-6 md:p-8 shadow-lg h-full flex flex-col transition-all duration-500 relative
                   `}
                 >
+                  {/* Quote + stars */}
                   <div className="flex justify-between items-start mb-4 md:mb-6">
                     <Quote className="w-10 h-10 md:w-12 md:h-12 text-[#CDFF00]/30 flex-shrink-0" />
                     <div className="flex gap-1">
@@ -192,30 +235,81 @@ export function TextReviews() {
                     </div>
                   </div>
 
+                  {/* Review text */}
                   <p className="text-sm md:text-base text-[#F3F3F2] leading-relaxed text-center italic mb-6 md:mb-8 flex-grow line-clamp-5">
-                    "{review.review_text}"
+                    {review.review_text}
                   </p>
 
-                  <div className="flex items-center gap-3 md:gap-4 mt-auto">
-                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden bg-gradient-to-br from-[#CDFF00]/20 to-[#CDFF00]/5 border-2 border-[#CDFF00]/30 flex-shrink-0">
-                      {review.picture ? (
-                        <img
-                          src={review.picture}
-                          alt={review.name}
-                          className="w-full h-full object-cover"
-                        />
+                  {/* Bottom row: avatar + name + website button */}
+                  <div className="flex items-center justify-between gap-3 mt-auto">
+
+                    {/* Left: avatar + name/title */}
+                    <div className="flex items-center gap-3 md:gap-4 min-w-0">
+
+                      {/* Avatar — clickable if website_url exists */}
+                      {hasLink ? (
+                        <a
+                          href={review.website_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="tr-avatar-link w-12 h-12 md:w-14 md:h-14"
+                          title={`Visit ${review.name}'s website`}
+                        >
+                          <div className="w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden bg-gradient-to-br from-[#CDFF00]/20 to-[#CDFF00]/5 border-2 border-[#CDFF00]/30">
+                            {review.picture ? (
+                              <img src={review.picture} alt={review.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-[#CDFF00] font-bold text-lg md:text-xl">
+                                {review.name.split(' ').map(n => n[0]).join('')}
+                              </div>
+                            )}
+                          </div>
+                        </a>
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-[#CDFF00] font-bold text-lg md:text-xl">
-                          {review.name.split(' ').map(n => n[0]).join('')}
+                        <div className="w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden bg-gradient-to-br from-[#CDFF00]/20 to-[#CDFF00]/5 border-2 border-[#CDFF00]/30 flex-shrink-0">
+                          {review.picture ? (
+                            <img src={review.picture} alt={review.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-[#CDFF00] font-bold text-lg md:text-xl">
+                              {review.name.split(' ').map(n => n[0]).join('')}
+                            </div>
+                          )}
                         </div>
                       )}
+
+                      {/* Name + title */}
+                      <div className="min-w-0">
+                        {hasLink ? (
+                          <a
+                            href={review.website_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="tr-name-link text-[#F3F3F2] text-base md:text-lg block truncate"
+                          >
+                            {review.name}
+                          </a>
+                        ) : (
+                          <p className="font-semibold text-[#F3F3F2] text-base md:text-lg truncate">
+                            {review.name}
+                          </p>
+                        )}
+                        <p className="text-[#CDFF00] text-xs md:text-sm truncate">{review.title}</p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-[#F3F3F2] text-base md:text-lg truncate">
-                        {review.name}
-                      </p>
-                      <p className="text-[#CDFF00] text-xs md:text-sm truncate">{review.title}</p>
-                    </div>
+
+                    {/* Right: Visit Website button — only if link exists */}
+                    {hasLink && (
+                      <a
+                        href={review.website_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="tr-link-btn flex-shrink-0"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <ExternalLink size={11} />
+                        Visit
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>
@@ -223,6 +317,7 @@ export function TextReviews() {
           })}
         </div>
 
+        {/* Controls */}
         <div className="flex items-center justify-center gap-6 md:gap-10 mt-8 md:mt-10">
           <button
             onClick={handlePrev}
